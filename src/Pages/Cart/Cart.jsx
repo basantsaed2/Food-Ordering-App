@@ -1,111 +1,22 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Minus, Plus, X, ShoppingCart, Trash2 } from 'lucide-react';
-import { 
-  incrementQuantity, 
-  decrementQuantity, 
-  removeFromCart, 
-  clearCart 
+import { Minus, Plus, X, ShoppingCart, Trash2, Receipt } from 'lucide-react';
+import {
+  incrementQuantity,
+  decrementQuantity,
+  removeFromCart,
+  clearCart
 } from '../../Store/Slices/cartSlice';
 
 const Cart = () => {
   const dispatch = useDispatch();
-  const { items, total, itemCount, subtotal, totalDiscount, totalTax } = useSelector(state => state.cart);
+  const { items, subtotal, total, itemCount, totalDiscount, totalTax, priceAfterDiscount } = useSelector(state => state.cart);
 
-  // Calculate detailed price breakdown
-  const calculatePriceBreakdown = () => {
-    let calculatedSubtotal = 0;
-    let calculatedDiscount = 0;
-    let calculatedTax = 0;
-
-    items.forEach(item => {
-      // Base product price
-      const basePrice = parseFloat(item.product.price) * item.quantity;
-      calculatedSubtotal += basePrice;
-
-      // Discount calculation
-      const discountPrice = parseFloat(item.product.price_after_discount || item.product.price) * item.quantity;
-      const itemDiscount = basePrice - discountPrice;
-      calculatedDiscount += Math.max(0, itemDiscount);
-
-      // Variation prices
-      if (item.variations) {
-        Object.values(item.variations).forEach(optionIds => {
-          if (Array.isArray(optionIds)) {
-            optionIds.forEach(optionId => {
-              const option = findOptionInProduct(item.product, optionId);
-              if (option) {
-                calculatedSubtotal += parseFloat(option.price) * item.quantity;
-              }
-            });
-          } else {
-            const option = findOptionInProduct(item.product, optionIds);
-            if (option) {
-              calculatedSubtotal += parseFloat(option.price) * item.quantity;
-            }
-          }
-        });
-      }
-
-      // Addon prices
-      if (item.addons) {
-        Object.entries(item.addons).forEach(([addonId, addonData]) => {
-          if (addonData.checked) {
-            const addon = item.product.addons?.find(a => a.id === parseInt(addonId));
-            if (addon) {
-              const addonPrice = parseFloat(addon.price) * addonData.quantity * item.quantity;
-              calculatedSubtotal += addonPrice;
-            }
-          }
-        });
-      }
-
-      // Extra prices
-      if (item.extras) {
-        Object.entries(item.extras).forEach(([extraId, extraQty]) => {
-          const extra = item.product.allExtras?.find(e => e.id === parseInt(extraId));
-          if (extra && extraQty > 0) {
-            const extraPrice = parseFloat(extra.price) * extraQty * item.quantity;
-            calculatedSubtotal += extraPrice;
-            
-            // Extra discount if available
-            if (extra.price_after_discount) {
-              const extraDiscount = (parseFloat(extra.price) - parseFloat(extra.price_after_discount)) * extraQty * item.quantity;
-              calculatedDiscount += Math.max(0, extraDiscount);
-            }
-          }
-        });
-      }
-
-      // Tax calculation based on tax setting
-      const taxSetting = item.product.taxes?.setting || 'excluded';
-      const taxAmount = parseFloat(item.product.tax_val) || 0;
-      
-      if (taxSetting === 'included' && taxAmount > 0) {
-        calculatedTax += taxAmount * item.quantity;
-      }
-    });
-
-    const finalTotal = calculatedSubtotal - calculatedDiscount + calculatedTax;
-
-    return {
-      subtotal: calculatedSubtotal.toFixed(2),
-      totalDiscount: calculatedDiscount.toFixed(2),
-      totalTax: calculatedTax.toFixed(2),
-      finalTotal: finalTotal.toFixed(2)
-    };
-  };
-
-  const findOptionInProduct = (product, optionId) => {
-    if (!product.variations) return null;
-    for (const variation of product.variations) {
-      const option = variation.options.find(o => o.id === optionId);
-      if (option) return option;
-    }
-    return null;
-  };
-
-  const priceBreakdown = calculatePriceBreakdown();
+  // Check if any item has excluded tax
+  const hasExcludedTax = items.some(item => {
+    const taxSetting = item.product.taxes?.setting || item.product.tax_obj?.setting || 'excluded';
+    return taxSetting === 'excluded';
+  });
 
   if (items.length === 0) {
     return (
@@ -113,7 +24,7 @@ const Cart = () => {
         <ShoppingCart className="h-24 w-24 text-gray-300 mb-6" />
         <h3 className="text-xl font-semibold text-gray-600 mb-2">Your cart is empty</h3>
         <p className="text-gray-500 mb-6">Add some delicious items to get started!</p>
-        <button 
+        <button
           onClick={() => window.history.back()}
           className="bg-mainColor text-white px-6 py-2 rounded-lg hover:bg-mainColor/90 transition-colors"
         >
@@ -124,7 +35,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
+    <div className="w-full p-4 md:p-6 xl:p-8">
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
@@ -165,7 +76,16 @@ const Cart = () => {
                       <div className="flex-1">
                         <h3 className="font-bold text-lg text-gray-900 mb-1">{item.product.name}</h3>
                         <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.product.description}</p>
-                        
+
+                        {/* Tax Info */}
+                        {item.taxDetails && item.taxDetails.totalTax > 0 && (
+                          <div className="mb-2">
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                              Tax (Product & Addons): {item.taxDetails.totalTax.toFixed(2)} EGP
+                            </span>
+                          </div>
+                        )}
+
                         {/* Display note if exists */}
                         {item.note && (
                           <div className="mb-3 p-2 bg-yellow-50 rounded-lg">
@@ -173,7 +93,7 @@ const Cart = () => {
                             <span className="text-sm text-yellow-700">{item.note}</span>
                           </div>
                         )}
-                        
+
                         {/* Price per item */}
                         <div className="flex items-center gap-2 mb-3">
                           <span className="text-lg font-bold text-mainColor">
@@ -192,7 +112,7 @@ const Cart = () => {
                           {item.variations && Object.entries(item.variations).map(([variationId, optionIds]) => {
                             const variation = item.product.variations?.find(v => v.id === parseInt(variationId));
                             if (!variation) return null;
-                            
+
                             return (
                               <div key={variationId} className="flex">
                                 <span className="font-medium w-20">{variation.name}:</span>
@@ -215,7 +135,7 @@ const Cart = () => {
                             if (!addonData.checked) return null;
                             const addon = item.product.addons?.find(a => a.id === parseInt(addonId));
                             if (!addon) return null;
-                            
+
                             return (
                               <div key={addonId} className="flex">
                                 <span className="font-medium w-20">Addon:</span>
@@ -224,16 +144,16 @@ const Cart = () => {
                             );
                           })}
 
-                          {/* Extras */}
+                          {/* Extras (No Tax) */}
                           {item.extras && Object.entries(item.extras).map(([extraId, extraQty]) => {
                             if (extraQty <= 0) return null;
                             const extra = item.product.allExtras?.find(e => e.id === parseInt(extraId));
                             if (!extra) return null;
-                            
+
                             return (
                               <div key={extraId} className="flex">
                                 <span className="font-medium w-20">Extra:</span>
-                                <span>{extra.name} ({extraQty}x)</span>
+                                <span>{extra.name} ({extraQty}x) - No Tax</span>
                               </div>
                             );
                           })}
@@ -252,7 +172,7 @@ const Cart = () => {
                           )}
                         </div>
                       </div>
-                      
+
                       {/* Remove Button */}
                       <button
                         onClick={() => dispatch(removeFromCart(item.id))}
@@ -281,7 +201,7 @@ const Cart = () => {
                           <Plus className="h-4 w-4" />
                         </button>
                       </div>
-                      
+
                       <span className="text-xl font-bold text-mainColor">
                         {item.totalPrice.toFixed(2)} EGP
                       </span>
@@ -296,36 +216,65 @@ const Cart = () => {
         {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 sticky top-4">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Order Summary</h2>
-            
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <Receipt className="h-5 w-5" />
+              Order Summary
+            </h2>
+
             {/* Price Breakdown */}
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal ({itemCount} items)</span>
-                <span>{priceBreakdown.subtotal} EGP</span>
+                <span>{subtotal.toFixed(2)} EGP</span>
               </div>
-              
-              {parseFloat(priceBreakdown.totalDiscount) > 0 && (
+
+              {totalDiscount > 0 && (
                 <div className="flex justify-between text-green-600">
                   <span>Discount</span>
-                  <span>-{priceBreakdown.totalDiscount} EGP</span>
+                  <span>-{totalDiscount.toFixed(2)} EGP</span>
                 </div>
               )}
-              
-              {parseFloat(priceBreakdown.totalTax) > 0 && (
-                <div className="flex justify-between text-gray-600">
-                  <span>Tax</span>
-                  <span>+{priceBreakdown.totalTax} EGP</span>
+
+              <div className="flex justify-between text-blue-600">
+                <span>Price After Discount</span>
+                <span>{priceAfterDiscount.toFixed(2)} EGP</span>
+              </div>
+
+              {hasExcludedTax && totalTax > 0 && (
+                <div className="flex justify-between text-orange-600">
+                  <span>Tax (Product & Addons)</span>
+                  <span>+{totalTax.toFixed(2)} EGP</span>
                 </div>
               )}
-              
+
               <div className="border-t pt-3">
                 <div className="flex justify-between text-lg font-bold text-gray-900">
                   <span>Total</span>
-                  <span>{priceBreakdown.finalTotal} EGP</span>
+                  <span>{total.toFixed(2)} EGP</span>
                 </div>
               </div>
             </div>
+
+            {/* Tax Breakdown Modal Trigger */}
+            {hasExcludedTax && (
+              <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                <details className="text-sm">
+                  <summary className="cursor-pointer font-medium text-gray-700">View Tax Breakdown</summary>
+                  <div className="mt-2 space-y-2">
+                    {items.map((item, index) => (
+                      <div key={index} className="text-xs text-gray-600">
+                        <div className="font-medium">{item.product.name}</div>
+                        {item.taxDetails.taxBreakdown.map((taxItem, taxIndex) => (
+                          <div key={taxIndex} className="ml-2">
+                            {taxItem.name}: {taxItem.taxAmount.toFixed(2)} EGP ({taxItem.taxRate}%)
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              </div>
+            )}
 
             {/* Checkout Button */}
             <button className="w-full bg-mainColor text-white py-3 rounded-lg font-bold hover:bg-mainColor/90 transition-colors text-lg">
@@ -333,7 +282,7 @@ const Cart = () => {
             </button>
 
             {/* Continue Shopping */}
-            <button 
+            <button
               onClick={() => window.history.back()}
               className="w-full border border-mainColor text-mainColor py-3 rounded-lg font-medium hover:bg-mainColor/5 transition-colors mt-3"
             >
