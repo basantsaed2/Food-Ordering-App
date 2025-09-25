@@ -7,11 +7,13 @@ import { useChangeState } from '../../Hooks/useChangeState';
 import StaticSpinner from '../../Components/Spinners/StaticSpinner';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../Context/Auth';
+import { useNavigate } from 'react-router-dom';
 
 const ProductDetails = ({ product, onClose, language }) => {
   const { t } = useTranslation();
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { changeState, loadingChange } = useChangeState();
   const auth = useAuth();
   const token = useSelector((state) => state?.user?.data?.token || '');
@@ -278,6 +280,13 @@ const ProductDetails = ({ product, onClose, language }) => {
 
   const handleAddToCart = () => {
     if (!canAddToCart()) return;
+
+    if (!user) {
+      auth.toastError(t('please Login First')); // show toast
+      setTimeout(() => navigate("/login"), 1500); // redirect after short delay
+      return;
+    }
+
     const cartItem = {
       product: productDetails || product,
       quantity,

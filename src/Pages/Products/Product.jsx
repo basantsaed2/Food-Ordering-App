@@ -453,7 +453,7 @@ const Products = () => {
     data: dataProducts,
   } = useGet({
     url: buildProductsUrl(),
-    required: !!selectedCategory, // Only require category, not location
+    // required: !!selectedCategory, // Only require category, not location
   });
 
   // Refetch when language changes or URL parameters change

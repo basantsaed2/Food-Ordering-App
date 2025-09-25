@@ -1,134 +1,3 @@
-// import React, { useEffect, useRef, useState } from "react";
-// import { usePost } from "../../Hooks/usePost";
-// import { useAuth } from "../../Context/Auth";
-// import { FiHome, FiMapPin } from "react-icons/fi";
-// import { MdWork } from "react-icons/md";
-// import { useNavigate } from "react-router-dom";
-// import { IoIosArrowBack } from "react-icons/io";
-// import { useTranslation } from "react-i18next";
-// import { useGet } from "../../Hooks/useGet";
-// import { useDispatch, useSelector } from 'react-redux';
-
-// const AddNewAddress = () => {
-//   const { t } = useTranslation();
-//   const apiUrl = import.meta.env.VITE_API_BASE_URL;
-//   const selectedLanguage = useSelector(state => state.language?.selected ?? 'en'); // Default to 'en' if no language is selected
-//   const { postData, loadingPost, response } = usePost({url: `${apiUrl}/customer/address/add`});
-//   const {
-//     refetch: refetchLists,
-//     loading: loadingLists,
-//     data: dataLists,
-//   } = useGet({
-//     url: `${apiUrl}/customer/address/lists2?locale=${selectedLanguage}`,
-//     required: true,
-//   });
-//   const auth = useAuth();
-//   const navigate = useNavigate();
-
-//   const [cities, setCities] = useState([]);
-//   const [zones, setZones] = useState([]);
-
-//   const [street, setStreet] = useState("");
-//   const [buildingNo, setBuildingNo] = useState("");
-//   const [floorNo, setFloorNo] = useState("");
-//   const [apartment, setApartment] = useState("");
-//   const [moreData, setMoreData] = useState("");
-//   const [addressType, setAddressType] = useState("home"); // Default to 'home' , [home , work , other]
-//   const [userLocation, setUserLocation] = useState(null);
-//   const [locationName, setLocationName] = useState("");
-
-//   //
-//   // Fetch locations on mount
-//   useEffect(() => {
-//     refetchLists();
-//   }, [refetchLists]);
-
-//   // Update cities and zones based on fetched data and selected city
-//   useEffect(() => {
-//     if (dataLists && dataLists.cities && dataLists.zones) {
-//       setCities([
-//         // { id: "", name: t("SelectCity") },
-//         ...dataLists.cities.map((city) => ({
-//           id: city.id,
-//           name: city.name,
-//         })),
-//       ]);
-//       setZones([
-//         // { id: "", name: t("SelectZone") },
-//         ...dataLists.zones
-//           .filter((zone) => (cityId ? zone.city_id === cityId : true))
-//           .map((zone) => ({
-//             id: zone.id,
-//             name: zone.zone,
-//           })),
-//       ]);
-//     }
-//   }, [dataLists, cityId, t]);
-
-//   // Navigate back and refetch locations after successful submission
-//   useEffect(() => {
-//     if (!loadingPost && response) {
-//       navigate('/order_type'); // Navigate back first
-//     }
-//   }, [loadingPost, response, navigate]);
-
-//   // Handle form submission
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-
-//     if (!locationName) {
-//       auth.toastError(t("Please Enter Location"));
-//       return;
-//     }
-//     if (!street) {
-//       auth.toastError(t("Please Enter Street Name"));
-//       return;
-//     }
-//     if (!buildingNo) {
-//       auth.toastError(t("Please Enter Building Number"));
-//       return;
-//     }
-//     if (!floorNo) {
-//       auth.toastError(t("Please Enter Floor Number"));
-//       return;
-//     }
-//     if (!zoneId) {
-//       auth.toastError(t("Please Select Zone"));
-//       return;
-//     }
-//     if (!addressType) {
-//       auth.toastError(t("Please select address type: Home, Work, or Other"));
-//       return;
-//     }
-
-//     const formData = new FormData();
-//     formData.append("address", locationName);
-//     formData.append("zone_id", zoneId);
-//     formData.append("street", street);
-//     formData.append("building_num", buildingNo);
-//     formData.append("floor_num", floorNo);
-//     formData.append("apartment", apartment);
-//     formData.append("additional_data", moreData);
-//     formData.append("type", addressType);
-//     formData.append("city_id", cityId);
-//     if (userLocation) {
-//       formData.append("latitude", userLocation.lat);
-//       formData.append("longitude", userLocation.lng);
-//     }
-
-//     postData(formData, "Address Added Success");
-//   };
-
-
-//   return (
-//     <div>
-
-//     </div>
-//   );
-// };
-
-// export default AddNewAddress;
-
 import React, { useEffect, useRef, useState } from "react";
 import { usePost } from "../../Hooks/usePost";
 import { useAuth } from "../../Context/Auth";
@@ -316,7 +185,7 @@ const AddNewAddress = () => {
     // Navigate after successful submission
     useEffect(() => {
         if (!loadingPost && response) {
-            navigate("/order_type");
+            navigate("/order_online");
         }
     }, [loadingPost, response, navigate]);
 
@@ -579,6 +448,11 @@ const AddNewAddress = () => {
         }
     };
 
+    // Generate Google Maps link from coordinates
+    const generateGoogleMapsLink = (lat, lng) => {
+        return `https://www.google.com/maps?q=${lat},${lng}`;
+    };
+
     // Handle form submission
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -622,6 +496,9 @@ const AddNewAddress = () => {
         if (userLocation) {
             formData.append("latitude", userLocation.lat);
             formData.append("longitude", userLocation.lng);
+            // Add Google Maps link
+            const mapsLink = generateGoogleMapsLink(userLocation.lat, userLocation.lng);
+            formData.append("map", mapsLink);
         }
 
         postData(formData, t("Address Added Successfully"));
@@ -793,8 +670,8 @@ const AddNewAddress = () => {
                                             type="button"
                                             onClick={() => setAddressType(item.type)}
                                             className={`p-4 border-2 rounded-xl text-center transition-all duration-200 ${addressType === item.type
-                                                    ? "border-current scale-105"
-                                                    : "border-gray-200 hover:border-gray-300"
+                                                ? "border-current scale-105"
+                                                : "border-gray-200 hover:border-gray-300"
                                                 }`}
                                             style={{
                                                 backgroundColor: addressType === item.type ? item.color : "transparent",
