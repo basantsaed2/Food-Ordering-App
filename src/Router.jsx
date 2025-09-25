@@ -11,6 +11,9 @@ import Cart from "./Pages/Cart/Cart";
 import FavoriteProducts from "./Pages/FavoriteProducts/FavoriteProducts";
 import OrderType from "./Pages/OrderType/OrderType";
 import AddNewAddress from "./Pages/OrderType/AddNewAddress";
+import CheckOut from "./Pages/CheckOut/CheckOut";
+import OrderTraking from "./Pages/OrderTracking/OrderTracking";
+import Profile from "./Pages/Profile/Profile";
 
 export const router = createBrowserRouter(
   [
@@ -29,6 +32,10 @@ export const router = createBrowserRouter(
         {
           path:'home',
           element:<Home/>
+        },
+        {
+          path:'profile',
+          element:<Profile/>
         },
         {
           path:'menu',
@@ -57,6 +64,14 @@ export const router = createBrowserRouter(
         {
           path:'cart',
           element:<Cart/>
+        },
+        {
+          path:'check_out',
+          element:<CheckOut/>
+        },
+        {
+          path:'order_traking/:orderId',
+          element:<OrderTraking/>
         },
       ]
     },

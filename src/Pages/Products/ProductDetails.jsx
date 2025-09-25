@@ -126,12 +126,12 @@ const ProductDetails = ({ product, onClose, language }) => {
     }
   };
 
-  const handleFavoriteToggle = async () => {
+  const handleFavoriteToggle = async (product) => {
     if (!token) {
       auth.toastError(t('pleaseLogin'));
       return;
     }
-    const newFavoriteState = !isFavorite;
+    const newFavoriteState = !product.favourite;
     const url = `${apiUrl}/customer/home/favourite/${product.id}`;
     const success = await changeState(
       url,
@@ -166,84 +166,84 @@ const ProductDetails = ({ product, onClose, language }) => {
   };
 
   const calculateTotalPrice = () => {
-  if (!productDetails) return (product.price_after_discount || product.price) * quantity;
-  
-  let total = parseFloat(productDetails.price_after_discount || productDetails.price);
-  
-  // Add variation prices
-  Object.values(selectedVariations).forEach((optionIds) => {
-    if (Array.isArray(optionIds)) {
-      optionIds.forEach((optionId) => {
+    if (!productDetails) return (product.price_after_discount || product.price) * quantity;
+
+    let total = parseFloat(productDetails.price_after_discount || productDetails.price);
+
+    // Add variation prices
+    Object.values(selectedVariations).forEach((optionIds) => {
+      if (Array.isArray(optionIds)) {
+        optionIds.forEach((optionId) => {
+          const option = productDetails.variations
+            .flatMap((v) => v.options)
+            .find((o) => o.id === optionId);
+          if (option) total += parseFloat(option.price);
+        });
+      } else {
         const option = productDetails.variations
           .flatMap((v) => v.options)
-          .find((o) => o.id === optionId);
+          .find((o) => o.id === optionIds);
         if (option) total += parseFloat(option.price);
-      });
-    } else {
-      const option = productDetails.variations
-        .flatMap((v) => v.options)
-        .find((o) => o.id === optionIds);
-      if (option) total += parseFloat(option.price);
-    }
-  });
-  
-  // Add addon prices
-  Object.entries(selectedAddons).forEach(([addonId, addonData]) => {
-    if (addonData.checked) {
-      const addon = productDetails.addons?.find((a) => a.id === parseInt(addonId));
-      if (addon) {
-        const addonQty = addonData.quantity || 1;
-        total += parseFloat(addon.price) * addonQty;
       }
-    }
-  });
-  
-  // Add extra prices (use price_after_discount for extras)
-  Object.entries(selectedExtras).forEach(([extraId, extraQty]) => {
-    const extra = productDetails.allExtras?.find((e) => e.id === parseInt(extraId));
-    if (extra && extraQty > 0 && isExtraAvailable(extra)) {
-      total += parseFloat(extra.price_after_discount || extra.price) * extraQty;
-    }
-  });
-  
-  return total * quantity;
-};
+    });
 
-//   const calculateTotalPrice = () => {
-//     if (!productDetails) return (product.price_after_discount || product.price) * quantity;
-//     let total = parseFloat(productDetails.price_after_discount || productDetails.price);
-//     Object.values(selectedVariations).forEach((optionIds) => {
-//       if (Array.isArray(optionIds)) {
-//         optionIds.forEach((optionId) => {
-//           const option = productDetails.variations
-//             .flatMap((v) => v.options)
-//             .find((o) => o.id === optionId);
-//           if (option) total += parseFloat(option.price);
-//         });
-//       } else {
-//         const option = productDetails.variations
-//           .flatMap((v) => v.options)
-//           .find((o) => o.id === optionIds);
-//         if (option) total += parseFloat(option.price);
-//       }
-//     });
-//     Object.entries(selectedAddons).forEach(([addonId, addonData]) => {
-//       if (addonData.checked) {
-//         const addon = productDetails.addons?.find((a) => a.id === parseInt(addonId));
-//         if (addon) {
-//           const addonQty = addonData.quantity || 1;
-//           total += parseFloat(addon.price) * addonQty;
-//         }
-//       }
-//     });
-//     Object.entries(selectedExtras).forEach(([extraId, extraQty]) => {
-//       const extra = productDetails.allExtras?.find((e) => e.id === parseInt(extraId));
-//       if (extra && extraQty > 0 && isExtraAvailable(extra)) {
-//         total += parseFloat(extra.price_after_discount || extra.price) * extraQty;
-//       }
-//     });
-//     return total * quantity;
-//   };
+    // Add addon prices
+    Object.entries(selectedAddons).forEach(([addonId, addonData]) => {
+      if (addonData.checked) {
+        const addon = productDetails.addons?.find((a) => a.id === parseInt(addonId));
+        if (addon) {
+          const addonQty = addonData.quantity || 1;
+          total += parseFloat(addon.price) * addonQty;
+        }
+      }
+    });
+
+    // Add extra prices (use price_after_discount for extras)
+    Object.entries(selectedExtras).forEach(([extraId, extraQty]) => {
+      const extra = productDetails.allExtras?.find((e) => e.id === parseInt(extraId));
+      if (extra && extraQty > 0 && isExtraAvailable(extra)) {
+        total += parseFloat(extra.price_after_discount || extra.price) * extraQty;
+      }
+    });
+
+    return total * quantity;
+  };
+
+  //   const calculateTotalPrice = () => {
+  //     if (!productDetails) return (product.price_after_discount || product.price) * quantity;
+  //     let total = parseFloat(productDetails.price_after_discount || productDetails.price);
+  //     Object.values(selectedVariations).forEach((optionIds) => {
+  //       if (Array.isArray(optionIds)) {
+  //         optionIds.forEach((optionId) => {
+  //           const option = productDetails.variations
+  //             .flatMap((v) => v.options)
+  //             .find((o) => o.id === optionId);
+  //           if (option) total += parseFloat(option.price);
+  //         });
+  //       } else {
+  //         const option = productDetails.variations
+  //           .flatMap((v) => v.options)
+  //           .find((o) => o.id === optionIds);
+  //         if (option) total += parseFloat(option.price);
+  //       }
+  //     });
+  //     Object.entries(selectedAddons).forEach(([addonId, addonData]) => {
+  //       if (addonData.checked) {
+  //         const addon = productDetails.addons?.find((a) => a.id === parseInt(addonId));
+  //         if (addon) {
+  //           const addonQty = addonData.quantity || 1;
+  //           total += parseFloat(addon.price) * addonQty;
+  //         }
+  //       }
+  //     });
+  //     Object.entries(selectedExtras).forEach(([extraId, extraQty]) => {
+  //       const extra = productDetails.allExtras?.find((e) => e.id === parseInt(extraId));
+  //       if (extra && extraQty > 0 && isExtraAvailable(extra)) {
+  //         total += parseFloat(extra.price_after_discount || extra.price) * extraQty;
+  //       }
+  //     });
+  //     return total * quantity;
+  //   };
 
   const validateVariationSelection = (variation) => {
     if (!variation.required) return true;
@@ -317,16 +317,24 @@ const ProductDetails = ({ product, onClose, language }) => {
             {/* Favorite Button */}
             {user && (
               <button
-                onClick={handleFavoriteToggle}
+                onClick={() => handleFavoriteToggle(displayData)}
                 disabled={loadingChange}
-                className={`p-2 rounded-full transition-colors ${
-                  isFavorite ? 'text-red-500 bg-red-50' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
-                }`}
-                title={isFavorite ? t('removeFromFavorites') : t('addToFavorites')}
+                className={`p-2 rounded-full transition-colors ${displayData.favourite
+                    ? "text-red-500 bg-red-50"
+                    : "text-gray-400 hover:text-red-500 hover:bg-red-50"
+                  }`}
+                title={
+                  displayData.favourite
+                    ? t("removeFromFavorites")
+                    : t("addToFavorites")
+                }
               >
-                <Heart className={`h-5 w-5 ${isFavorite ? 'fill-current' : ''}`} />
+                <Heart
+                  className={`h-5 w-5 ${displayData.favourite ? "fill-current" : ""}`}
+                />
               </button>
             )}
+
             <button
               onClick={onClose}
               className="p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -596,11 +604,10 @@ const ProductDetails = ({ product, onClose, language }) => {
           <button
             onClick={handleAddToCart}
             disabled={!canAddToCart()}
-            className={`w-full py-3 rounded-lg font-semibold transition-colors ${
-              canAddToCart()
+            className={`w-full py-3 rounded-lg font-semibold transition-colors ${canAddToCart()
                 ? 'bg-mainColor text-white hover:bg-mainColor/90'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
+              }`}
           >
             {canAddToCart() ? t('addToCart') : t('completeSelection')}
           </button>

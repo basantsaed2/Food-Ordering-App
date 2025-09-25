@@ -7,9 +7,11 @@ import {
   removeFromCart,
   clearCart
 } from '../../Store/Slices/cartSlice';
+import { useNavigate } from 'react-router-dom';
 
 const Cart = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { items, subtotal, total, itemCount, totalDiscount, totalTax, priceAfterDiscount } = useSelector(state => state.cart);
 
   // Check if any item has excluded tax
@@ -277,7 +279,7 @@ const Cart = () => {
             )}
 
             {/* Checkout Button */}
-            <button className="w-full bg-mainColor text-white py-3 rounded-lg font-bold hover:bg-mainColor/90 transition-colors text-lg">
+            <button  onClick={() => navigate('/check_out')} className="w-full bg-mainColor text-white py-3 rounded-lg font-bold hover:bg-mainColor/90 transition-colors text-lg">
               Proceed to Checkout
             </button>
 

@@ -15,7 +15,7 @@ const ProtectedLogin = () => {
               const profile = location.pathname === '/profile';
               const favorites = location.pathname === '/favorites';
               const checkOut = location.pathname === '/check_out';
-              const orders = location.pathname === '/orders';
+              // const orders = location.pathname === '/orders';
               const ordersHistory = location.pathname === '/orders/history';
               const orderTraking = location.pathname === '/orders/order_traking';
 
