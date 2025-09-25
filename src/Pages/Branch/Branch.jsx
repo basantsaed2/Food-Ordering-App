@@ -150,7 +150,7 @@ const Branch = () => {
                 <div className="flex items-center gap-2 pt-1">
                   {/* View Products Button */}
                   <Link
-                    to={`/products?branch=${branch.id}`}
+                    to={`/products`}
                     className="group/btn flex items-center gap-1.5 px-2.5 py-1.5 bg-mainColor text-white rounded-lg hover:bg-mainColor/90 transition-all duration-200 font-medium text-xs flex-shrink-0 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                     title={`${t('ViewProducts')} - ${branch.name}`}
                   >

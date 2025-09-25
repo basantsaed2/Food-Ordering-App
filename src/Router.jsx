@@ -50,6 +50,10 @@ export const router = createBrowserRouter(
           element:<Products/>
         },
         {
+          path:'products',
+          element:<Products/>
+        },
+        {
           path:'favorite_product',
           element:<FavoriteProducts/>
         },
