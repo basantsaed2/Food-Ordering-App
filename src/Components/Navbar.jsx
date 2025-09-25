@@ -163,7 +163,8 @@ const Navbar = () => {
 
     return (
         <>
-            <nav className="shadow-lg relative z-50" style={{ backgroundColor: 'var(--color-main)' }}>
+            {/* Navbar with lower z-index */}
+            <nav className="shadow-lg relative z-[9999]" style={{ backgroundColor: 'var(--color-main)' }}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16 lg:h-20">
                         {/* Logo with Name */}
@@ -229,9 +230,9 @@ const Navbar = () => {
                                     <span className="font-medium">{currentLanguageName}</span>
                                 </button>
 
-                                {/* Language Dropdown */}
+                                {/* Language Dropdown - Higher z-index */}
                                 {languages.length > 1 && (
-                                    <div className="absolute top-full left-0 mt-2 w-32 bg-white rounded-lg shadow-lg py-1 z-50 hidden group-hover:block">
+                                    <div className="absolute top-full left-0 mt-2 w-32 bg-white rounded-lg shadow-lg py-1 z-60 hidden group-hover:block">
                                         {languages.map((lang) => (
                                             <button
                                                 key={lang.code}
@@ -267,8 +268,8 @@ const Navbar = () => {
                                         </span>
                                     </button>
                                     
-                                    {/* Profile Dropdown */}
-                                    <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50 hidden group-hover:block">
+                                    {/* Profile Dropdown - Higher z-index */}
+                                    <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-60 hidden group-hover:block">
                                         <Link
                                             to="/profile"
                                             className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
@@ -349,8 +350,8 @@ const Navbar = () => {
                 </div>
             </nav>
 
-            {/* Mobile Sidebar */}
-            <div className={`fixed inset-0 z-40 xl:hidden ${isMobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+            {/* Mobile Sidebar - Higher z-index */}
+            <div className={`fixed inset-0 z-50 xl:hidden ${isMobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                 {/* Backdrop */}
                 <div
                     className={`absolute inset-0 bg-black transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-50' : 'opacity-0'

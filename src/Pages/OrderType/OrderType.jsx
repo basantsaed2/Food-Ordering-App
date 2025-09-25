@@ -204,7 +204,7 @@ const OrderType = () => {
       navigate('/auth/login', { replace: true });
       return;
     }
-    navigate('/check_out/add_address');
+    navigate('/add_address');
   }, [navigate, user?.token]);
 
   // Get icon for order type
