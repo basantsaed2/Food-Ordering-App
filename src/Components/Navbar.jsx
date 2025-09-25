@@ -164,7 +164,7 @@ const Navbar = () => {
     return (
         <>
             {/* Navbar with lower z-index */}
-            <nav className="shadow-lg relative z-[9999]" style={{ backgroundColor: 'var(--color-main)' }}>
+            <nav className="shadow-lg relative z-40" style={{ backgroundColor: 'var(--color-main)' }}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16 lg:h-20">
                         {/* Logo with Name */}

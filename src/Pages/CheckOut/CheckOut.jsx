@@ -350,7 +350,7 @@ const CheckOut = () => {
             if (responseOrder.data?.paymentLink) {
                 window.open(responseOrder.data.paymentLink, "_blank");
             } else {
-                navigate(`order_traking/${responseOrder?.data?.success}`, {
+                navigate(`/order_traking/${responseOrder?.data?.success}`, {
                     replace: true,
                 });
             }

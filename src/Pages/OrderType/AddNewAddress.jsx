@@ -118,6 +118,7 @@ const AddNewAddress = () => {
             color: state.isSelected ? "white" : "#1f2937",
             padding: "12px 16px",
             "&:hover": { backgroundColor: `${mainColor}10` },
+            zIndex: 9999,
         }),
         menu: (provided) => ({
             ...provided,
@@ -507,7 +508,7 @@ const AddNewAddress = () => {
     return (
         <div className="min-h-screen bg-white">
             {/* Header */}
-            <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
+            <div className="bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center space-x-4">
@@ -573,7 +574,7 @@ const AddNewAddress = () => {
 
                                 {/* Search Suggestions - Fixed z-index */}
                                 {addressSuggestions.length > 0 && (
-                                    <div className="absolute z-40 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                                    <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                                         {addressSuggestions.map((suggestion, index) => (
                                             <button
                                                 key={suggestion.value || index}

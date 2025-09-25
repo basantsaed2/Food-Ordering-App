@@ -42,7 +42,7 @@ const Home = () => {
   // }
 
   return (
-    <div className="flex flex-col items-center w-screen gap-2">
+    <div className="flex flex-col items-center w-screen ">
       <Banners />
       <Categories/>
       <RecommendedProduct />

@@ -112,7 +112,7 @@ const Categories = () => {
           {/* Navigation Controls - Only show if multiple categories */}
           {categoriesData.length > 1 && (
             <div className="flex items-center space-x-3">
-              <button
+              {/* <button
                 onClick={toggleAutoScroll}
                 className="p-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors flex items-center justify-center"
                 aria-label={isPlaying ? 'Pause auto-scroll' : 'Play auto-scroll'}
@@ -122,7 +122,7 @@ const Categories = () => {
                 ) : (
                   <Play className="h-4 w-4 text-gray-700" />
                 )}
-              </button>
+              </button> */}
 
               <div className="flex space-x-2">
                 <button
@@ -176,11 +176,11 @@ const Categories = () => {
                     </h3>
                   </div>
 
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  {/* <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
                       <ChevronRight className="h-5 w-5 text-white" />
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </Link>
             ))}

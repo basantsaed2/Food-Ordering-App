@@ -5,6 +5,7 @@ import StaticSpinner from '../../../Components/Spinners/StaticSpinner';
 import { ChevronLeft, ChevronRight, Play, Pause, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useGet } from '../../../Hooks/useGet';
+import ProductDetails from '../../Products/ProductDetails';
 
 const RecommendedProduct = () => {
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -14,6 +15,8 @@ const RecommendedProduct = () => {
   const autoScrollRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [recommendedProductsData, setRecommendedProductsData] = useState(null);
+  const [showProductDialog, setShowProductDialog] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const {
     refetch: refetchRecommendedProducts,
@@ -80,6 +83,19 @@ const RecommendedProduct = () => {
     setIsPlaying(!isPlaying);
   };
 
+  // Handle open product details dialog
+  const handleProductClick = (product, e) => {
+    e.stopPropagation();
+    setSelectedProduct(product);
+    setShowProductDialog(true);
+  };
+
+  // Handle close dialog
+  const handleCloseDialog = () => {
+    setShowProductDialog(false);
+    setSelectedProduct(null);
+  };
+
   // Show loading if data is not available yet
   if (loadingRecommendedProducts) {
     return (
@@ -103,16 +119,16 @@ const RecommendedProduct = () => {
         {/* Section Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-mainColor">
+            <h2 className="text-xl md:text-3xl font-bold text-mainColor">
               Recommended Products
             </h2>
             <p className="text-gray-600 mt-1">Our specially selected items just for you</p>
           </div>
 
           {/* Navigation Controls - Only show if multiple products */}
-          {/* {recommendedProductsData.length > 1 && (
+          {recommendedProductsData.length > 1 && (
             <div className="flex items-center space-x-3">
-              <button 
+              {/* <button 
                 onClick={toggleAutoScroll}
                 className="p-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors flex items-center justify-center"
                 aria-label={isPlaying ? 'Pause auto-scroll' : 'Play auto-scroll'}
@@ -122,7 +138,7 @@ const RecommendedProduct = () => {
                 ) : (
                   <Play className="h-4 w-4 text-gray-700" />
                 )}
-              </button>
+              </button> */}
               
               <div className="flex space-x-2">
                 <button 
@@ -141,7 +157,7 @@ const RecommendedProduct = () => {
                 </button>
               </div>
             </div>
-          )} */}
+          )}
         </div>
 
         {/* Products Swiper */}
@@ -152,9 +168,9 @@ const RecommendedProduct = () => {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {recommendedProductsData.map((product) => (
-              <Link
+              <div
+                onClick={(e) => handleProductClick(product, e)}
                 key={product.id}
-                to={`/product/${product.id}`}
                 className="group flex-shrink-0 relative bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 w-56 flex flex-col"
               >
                 <div className="relative w-full h-48 overflow-hidden">
@@ -172,12 +188,6 @@ const RecommendedProduct = () => {
                   <div className="absolute top-2 left-2 bg-amber-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center">
                     <Star className="h-3 w-3 mr-1 fill-current" />
                     Recommended
-                  </div>
-
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
-                      <ChevronRight className="h-5 w-5 text-white" />
-                    </div>
                   </div>
                 </div>
 
@@ -202,11 +212,20 @@ const RecommendedProduct = () => {
                     )}
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
       </div>
+
+      {/* Product Details Dialog */}
+      {showProductDialog && selectedProduct && (
+        <ProductDetails
+          product={selectedProduct}
+          onClose={handleCloseDialog}
+          language={selectedLanguage}
+        />
+      )}
 
       <style jsx>{`
         .scrollbar-hide::-webkit-scrollbar {

@@ -296,7 +296,7 @@ const ProductCard = ({
               )}
             </div>
             <button
-              onClick={handleQuickAddToCart}
+              onClick={handleProductClick}
               className="p-1.5 bg-mainColor text-white rounded-full hover:bg-mainColor/90 transition-all duration-200 flex-shrink-0 shadow-sm hover:shadow-md transform hover:scale-105"
               title={t('quickAddToCart')}
             >

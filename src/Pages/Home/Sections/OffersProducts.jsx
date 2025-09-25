@@ -4,6 +4,7 @@ import StaticSpinner from '../../../Components/Spinners/StaticSpinner';
 import { ChevronLeft, ChevronRight, Play, Pause, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useGet } from '../../../Hooks/useGet';
+import ProductDetails from '../../Products/ProductDetails';
 
 const OffersProducts = () => {
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -13,6 +14,8 @@ const OffersProducts = () => {
   const autoScrollRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [offerProductsData, setOfferProductsData] = useState(null);
+  const [showProductDialog, setShowProductDialog] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const {
     refetch: refetchOfferProducts,
@@ -78,6 +81,19 @@ const OffersProducts = () => {
     setIsPlaying(!isPlaying);
   };
 
+  // Handle open product details dialog
+  const handleProductClick = (product, e) => {
+    e.stopPropagation();
+    setSelectedProduct(product);
+    setShowProductDialog(true);
+  };
+
+  // Handle close dialog
+  const handleCloseDialog = () => {
+    setShowProductDialog(false);
+    setSelectedProduct(null);
+  };
+
   // Show loading if data is not available yet
   if (loadingOfferProducts) {
     return (
@@ -108,9 +124,9 @@ const OffersProducts = () => {
           </div>
 
           {/* Navigation Controls - Only show if multiple products */}
-          {/* {offerProductsData.length > 1 && (
+          {offerProductsData.length > 1 && (
             <div className="flex items-center space-x-3">
-              <button 
+              {/* <button 
                 onClick={toggleAutoScroll}
                 className="p-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors flex items-center justify-center"
                 aria-label={isPlaying ? 'Pause auto-scroll' : 'Play auto-scroll'}
@@ -120,7 +136,7 @@ const OffersProducts = () => {
                 ) : (
                   <Play className="h-4 w-4 text-gray-700" />
                 )}
-              </button>
+              </button> */}
               
               <div className="flex space-x-2">
                 <button 
@@ -139,7 +155,7 @@ const OffersProducts = () => {
                 </button>
               </div>
             </div>
-          )} */}
+          )}
         </div>
 
         {/* Products Swiper */}
@@ -150,32 +166,25 @@ const OffersProducts = () => {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {offerProductsData.map((product) => (
-              <Link
+              <div
                 key={product.id}
-                to={`/product/${product.id}`}
-                className="group flex-shrink-0 relative bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 w-56 flex flex-col"
+                onClick={(e) => handleProductClick(product, e)}
+                className="group flex-shrink-0 relative bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 w-56 flex flex-col border border-red-100"
               >
                 <div className="relative w-full h-48 overflow-hidden">
                   <img
-                    src={product.image_link || product.image}
+                    src={product.image_link}
                     alt={product.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     onError={(e) => {
-                      e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5YzlkYWEiIHRleHQtYW5jaG9rPSJtaWRkbGUiIGR5PSIwLjM1ZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+                      e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5YzlkYWEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIwLjM1ZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
                       e.target.style.objectFit = 'contain';
                     }}
                   />
 
-                  {/* Recommended badge */}
-                  <div className="absolute top-2 left-2 bg-amber-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center">
-                    <Star className="h-3 w-3 mr-1 fill-current" />
-                    Recommended
-                  </div>
-
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
-                      <ChevronRight className="h-5 w-5 text-white" />
-                    </div>
+                  {/* Discount badge */}
+                  <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                    {product.discount}% OFF
                   </div>
                 </div>
 
@@ -187,24 +196,40 @@ const OffersProducts = () => {
                   <p className="text-gray-600 text-xs line-clamp-2 mb-2">
                     {product.description && product.description !== "null"
                       ? product.description
-                      : "Delicious food item"}
+                      : "Exclusive offer item"}
                   </p>
                   <div className="mt-auto flex justify-between items-center">
-                    <span className="text-mainColor font-bold text-lg">
-                      {product.price_after_discount || product.price} EGP
-                    </span>
-                    {product.price_after_discount && product.price_after_discount < product.price && (
-                      <span className="text-gray-500 text-sm line-through">
-                        {product.price} EGP
+                    <div>
+                      <span className="text-red-600 font-bold text-lg">
+                        {product.price_after_discount} EGP
                       </span>
-                    )}
+                      {product.price_after_discount < product.price && (
+                        <span className="text-gray-500 text-sm line-through ml-2">
+                          {product.price} EGP
+                        </span>
+                      )}
+                    </div>
                   </div>
+                  {product.price_after_discount < product.price && (
+                    <p className="text-green-600 text-xs mt-1">
+                      Save {(product.price - product.price_after_discount)} EGP!
+                    </p>
+                  )}
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
       </div>
+
+      {/* Product Details Dialog */}
+      {showProductDialog && selectedProduct && (
+        <ProductDetails
+          product={selectedProduct}
+          onClose={handleCloseDialog}
+          language={selectedLanguage}
+        />
+      )}
 
       <style jsx>{`
         .scrollbar-hide::-webkit-scrollbar {
