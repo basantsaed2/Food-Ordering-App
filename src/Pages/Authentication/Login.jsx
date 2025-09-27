@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { usePost } from '../../Hooks/usePost';
 import { useGet } from '../../Hooks/useGet';
 import { FaEnvelope, FaPhone, FaLock, FaUser, FaGoogle, FaFacebook, FaUtensils, FaArrowLeft } from 'react-icons/fa';
@@ -8,11 +8,28 @@ import { MdEmail, MdOutlinePassword, MdFastfood } from 'react-icons/md';
 import { BiSolidFoodMenu } from 'react-icons/bi';
 import { TbPasswordUser } from 'react-icons/tb';
 import { useAuth } from '../../Context/Auth';
+import { InputOtp } from 'primereact/inputotp';
 
 const LoginPage = () => {
     const navigate = useNavigate();
     const apiUrl = import.meta.env.VITE_API_BASE_URL;
     const auth = useAuth();
+
+      const customInput = ({ events, props }) => {
+        const { invalid, ...inputProps } = props;
+        const inputClass = invalid ? 'border-red-500' : 'border-gray-300';
+
+        return (
+            <input
+                {...events}
+                {...inputProps}
+                key={props.id}
+                className={`w-full pl-4 pr-4 py-3 rounded-lg text-black border ${inputClass} focus:ring-2 focus:ring-red-200 focus:border-red-500 outline-none transition duration-200 text-center text-xl tracking-widest`}
+                type="text"
+                unstyled={props.unstyled ? 'true' : 'false'}
+            />
+        );
+    };
 
     // State management
     const [verificationMethod, setVerificationMethod] = useState(null);
@@ -62,7 +79,7 @@ const LoginPage = () => {
 
     useEffect(() => {
         if (responseLogin && responseLogin?.status === 200) {
-            navigate('/');
+            navigate('/order_online');
             auth.login(responseLogin.data);
         }
     }, [responseLogin, loadingLogin])
@@ -73,13 +90,6 @@ const LoginPage = () => {
             setSuccessMessage(`Verification code sent to your ${verificationMethod}`);
         }
     }, [responseSendOtp, loadingSendOtp])
-
-    useEffect(() => {
-        if (responseVerifyOtp?.status === 200) {
-            setLoginStep('newPassword');
-            setSuccessMessage('Code verified successfully. Please set your new password.');
-        }
-    }, [responseVerifyOtp, loadingVerifyOtp])
 
     useEffect(() => {
         if (responseVerifyOtp?.status === 200) {
@@ -212,7 +222,8 @@ const LoginPage = () => {
         }
         const payload = {
             [verificationMethod]: verificationMethod === 'email' ? email : phone,
-            password: newPassword
+            password: newPassword,
+            code: otp
         };
 
         postResetPassword(payload);
@@ -224,7 +235,7 @@ const LoginPage = () => {
             case 'login':
                 return (
                     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-amber-100 p-4">
-                        <div className="relative max-w-4xl w-full flex rounded-3xl overflow-hidden shadow-2xl">
+                        <div className="relative max-w-6xl w-full flex rounded-3xl overflow-hidden shadow-2xl">
                             {/* Left side - Illustration */}
                             <div className="hidden md:flex md:w-2/5 bg-red-500 flex-col justify-center items-center p-8 text-white relative overflow-hidden">
                                 <div className="absolute inset-0 bg-gradient-to-b from-red-500/20 to-red-700/30"></div>
@@ -327,9 +338,9 @@ const LoginPage = () => {
                                 <div className="mt-8 text-center">
                                     <p className="text-sm text-gray-600">
                                         Don't have an account?{' '}
-                                        <button type="button" className="text-red-600 hover:text-red-800 font-medium">
-                                            Sign up
-                                        </button>
+                                        <Link to="/signup" className="text-red-600 hover:text-red-800 font-medium">
+                                            Sign Up
+                                        </Link>
                                     </p>
                                 </div>
                             </div>
@@ -445,19 +456,16 @@ const LoginPage = () => {
                             </div>
 
                             <form onSubmit={handleVerifyOtp}>
+
                                 <div className="mb-6">
                                     <label className="block text-gray-700 text-sm font-medium mb-2">Verification Code</label>
                                     <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <RiCustomerService2Fill className="h-5 w-5 text-gray-400" />
-                                        </div>
-                                        <input
-                                            type="text"
+                                        <InputOtp
                                             value={otp}
-                                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 5))}
-                                            placeholder="Enter 5-digit code"
-                                            className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.otp ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-red-200 focus:border-red-500 outline-none transition duration-200 text-center text-xl tracking-widest`}
-                                            maxLength={5}
+                                            onChange={(e) => setOtp(e.value)}
+                                            length={5}
+                                            integerOnly
+                                            inputTemplate={customInput}
                                         />
                                     </div>
                                     {errors.otp && <p className="mt-1 text-sm text-red-600">{errors.otp}</p>}

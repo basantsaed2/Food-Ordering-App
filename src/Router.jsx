@@ -14,12 +14,17 @@ import AddNewAddress from "./Pages/OrderType/AddNewAddress";
 import CheckOut from "./Pages/CheckOut/CheckOut";
 import OrderTraking from "./Pages/OrderTracking/OrderTracking";
 import Profile from "./Pages/Profile/Profile";
+import SignUpPage from "./Pages/Authentication/SignUp";
 
 export const router = createBrowserRouter(
   [
     {
       path:'login',
       element : <LoginPage/>
+    },
+    {
+      path:'signup',
+      element : <SignUpPage/>
     },
     {
       path: '',

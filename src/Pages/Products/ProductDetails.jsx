@@ -26,6 +26,8 @@ const ProductDetails = ({ product, onClose, language }) => {
   const [isFavorite, setIsFavorite] = useState(product.favourite || false);
   const [displayProduct, setDisplayProduct] = useState(product);
   const user = useSelector(state => state.user?.data?.user);
+  const selectedAddressId = useSelector(state => state.orderType?.selectedAddressId);
+  const selectedBranchId = useSelector(state => state.orderType?.selectedBranchId);
 
   // Fetch product details
   const {
@@ -287,6 +289,13 @@ const ProductDetails = ({ product, onClose, language }) => {
       return;
     }
 
+    if (!selectedBranchId && !selectedAddressId) {
+      onClose();
+      auth.toastError(t('please select order type first')); // show toast
+      setTimeout(() => navigate("/order_online"), 1500); // redirect after short delay
+      return;
+    }
+
     const cartItem = {
       product: productDetails || product,
       quantity,
@@ -329,8 +338,8 @@ const ProductDetails = ({ product, onClose, language }) => {
                 onClick={() => handleFavoriteToggle(displayData)}
                 disabled={loadingChange}
                 className={`p-2 rounded-full transition-colors ${displayData.favourite
-                    ? "text-red-500 bg-red-50"
-                    : "text-gray-400 hover:text-red-500 hover:bg-red-50"
+                  ? "text-red-500 bg-red-50"
+                  : "text-gray-400 hover:text-red-500 hover:bg-red-50"
                   }`}
                 title={
                   displayData.favourite
@@ -614,8 +623,8 @@ const ProductDetails = ({ product, onClose, language }) => {
             onClick={handleAddToCart}
             disabled={!canAddToCart()}
             className={`w-full py-3 rounded-lg font-semibold transition-colors ${canAddToCart()
-                ? 'bg-mainColor text-white hover:bg-mainColor/90'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              ? 'bg-mainColor text-white hover:bg-mainColor/90'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
           >
             {canAddToCart() ? t('addToCart') : t('completeSelection')}
