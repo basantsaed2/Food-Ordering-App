@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setLanguage, setLanguages } from '../Store/Slices/languageSlice';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import mainLogo from '../assets/Images/mainLogo.jpeg'
 
 const Navbar = () => {
     const dispatch = useDispatch();
@@ -375,6 +376,17 @@ const Navbar = () => {
                                 </Link>
                             )}
 
+                             <div className="relative" ref={languageDropdownRef}>
+                                <button
+                                    onClick={toggleLanguageDropdown}
+                                    className="text-white hover:text-gray-200 transition-colors flex items-center space-x-2 bg-white bg-opacity-20 rounded-full px-4 py-2 group"
+                                >
+                                    <Globe className="h-4 w-4" />
+                                    <span className="font-medium">{currentLanguageName}</span>
+                                </button>
+                                <LanguageDropdown />
+                            </div>
+
                             {/* Mobile Menu Button */}
                             <button
                                 onClick={toggleMobileMenu}
@@ -517,16 +529,12 @@ const Navbar = () => {
                         </div>
 
                         {/* Footer */}
-                        <div className="p-6 border-t border-gray-100 bg-gray-50">
+                        <div className="p-2 border-t border-gray-100 bg-gray-50">
                             <div className="flex items-center justify-center space-x-3 text-gray-600">
-                                <div className="flex items-center space-x-1">
-                                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                                    <span className="text-sm font-medium">4.8</span>
-                                </div>
-                                <div className="w-px h-4 bg-gray-300"></div>
-                                <span className="text-sm">
-                                    {t('happyCustomers')}
-                                </span>
+                                <Link to="https://food2go.online/" target="_blank" className="flex items-center justify-center gap-2">
+                                    <h1 className="text-gray-600">{t("Poweredby")}</h1>
+                                    <img src={mainLogo} className="w-16 h-16" alt="Main Logo" />
+                                </Link>
                             </div>
                         </div>
                     </div>
