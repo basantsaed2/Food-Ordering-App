@@ -7,7 +7,7 @@
 // import ProductCard from '../../Components/ProductCard';
 // import { setTaxType } from '../../Store/Slices/taxTypeSlice';
 // import { useAuth } from '../../Context/Auth';
-// import { setSelectedBranch, setSelectedAddress, setOrderType } from '../../Store/Slices/orderTypeSlice'; // Add this import
+// import { setSelectedBranch, setSelectedAddress, setOrderType } from '../../Store/Slices/orderTypeSlice';
 
 // const Products = () => {
 //   const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -43,12 +43,10 @@
 
 //   // Sync URL parameters with Redux state on component mount
 //   useEffect(() => {
-//     // Restore from localStorage on mount (this should be in your orderTypeSlice)
 //     const savedOrderType = localStorage.getItem('orderType');
 //     const savedAddressId = localStorage.getItem('selectedAddressId');
 //     const savedBranchId = localStorage.getItem('selectedBranchId');
 
-//     // Priority: URL params > localStorage > existing Redux state
 //     if (urlOrderType && urlOrderType !== orderType) {
 //       dispatch(setOrderType(urlOrderType));
 //     } else if (savedOrderType && savedOrderType !== orderType) {
@@ -68,10 +66,11 @@
 //     }
 //   }, [dispatch, urlOrderType, urlAddressId, urlBranchId, orderType, selectedAddressId, selectedBranchId]);
 
-//   // Build API URL for categories
+//   // Build API URL for categories - ALWAYS fetch categories even without location
 //   const buildCategoriesUrl = useCallback(() => {
 //     let url = `${apiUrl}/customer/home/categories?locale=${selectedLanguage}`;
 
+//     // Add location parameters only if they exist
 //     if (effectiveAddressId && effectiveOrderType === 'delivery') {
 //       url += `&address_id=${effectiveAddressId}`;
 //     } else if (effectiveBranchId && effectiveOrderType === 'take_away') {
@@ -81,13 +80,13 @@
 //     return url;
 //   }, [apiUrl, selectedLanguage, effectiveAddressId, effectiveBranchId, effectiveOrderType]);
 
-//   // Build API URL for products
+//   // Build API URL for products - ALWAYS fetch products if category exists
 //   const buildProductsUrl = useCallback(() => {
 //     if (!selectedCategory) return null;
 
-//     let url = `${apiUrl}/customer/home/products_in_category/${selectedCategory}?locale=${selectedLanguage}${user ? `&user_id=${user.id}` : ""
-//             }`;
+//     let url = `${apiUrl}/customer/home/products_in_category/${selectedCategory}?locale=${selectedLanguage}${user ? `&user_id=${user.id}` : ""}`;
 
+//     // Add location parameters only if they exist
 //     if (effectiveAddressId && effectiveOrderType === 'delivery') {
 //       url += `&address_id=${effectiveAddressId}`;
 //     } else if (effectiveBranchId && effectiveOrderType === 'take_away') {
@@ -95,25 +94,26 @@
 //     }
 
 //     return url;
-//   }, [apiUrl, selectedCategory, selectedLanguage, effectiveAddressId, effectiveBranchId, effectiveOrderType]);
+//   }, [apiUrl, selectedCategory, selectedLanguage, effectiveAddressId, effectiveBranchId, effectiveOrderType, user]);
 
-//   // Fetch categories
+//   // Fetch categories - REMOVE required condition to always fetch
 //   const {
 //     refetch: refetchCategories,
 //     loading: loadingCategories,
 //     data: dataCategories,
 //   } = useGet({
 //     url: buildCategoriesUrl(),
-//     required: !!effectiveAddressId || !!effectiveBranchId,
+//     // REMOVE this line: required: !!effectiveAddressId || !!effectiveBranchId
 //   });
 
-//   // Fetch products
+//   // Fetch products - REMOVE required condition to always fetch if category exists
 //   const {
 //     refetch: refetchProducts,
 //     loading: loadingProducts,
 //     data: dataProducts,
 //   } = useGet({
 //     url: buildProductsUrl(),
+//     // required: !!selectedCategory, // Only require category, not location
 //   });
 
 //   // Refetch when language changes or URL parameters change
@@ -126,23 +126,23 @@
 //     if (dataCategories && !loadingCategories) {
 //       setCategoriesData(dataCategories.categories || []);
 
-//       // Set selected category if not set
+//       // Set selected category from URL parameter
 //       if (id && !selectedCategory) {
 //         setSelectedCategory(parseInt(id));
 //       }
 //     }
 //   }, [dataCategories, loadingCategories, id, selectedCategory]);
 
-//   // Auto-select first category if none selected
+//   // Auto-select first category if none selected but categories exist
 //   useEffect(() => {
-//     if (!selectedCategory && categoriesData.length > 0 && effectiveOrderType &&
-//       (effectiveAddressId || effectiveBranchId)) {
-
+//     if (!selectedCategory && categoriesData.length > 0) {
 //       const firstCategory = categoriesData[0].id;
 //       setSelectedCategory(firstCategory);
 
 //       // Update URL to reflect the selected category
 //       const query = new URLSearchParams();
+      
+//       // Only add location parameters if they exist
 //       if (effectiveOrderType === 'delivery' && effectiveAddressId) {
 //         query.set('address_id', effectiveAddressId);
 //         query.set('order_type', 'delivery');
@@ -164,14 +164,13 @@
 //     }
 //   }, [dataProducts, loadingProducts, dispatch]);
 
-//   // Refetch products when selected category or query params change
+//   // Refetch products when selected category changes
 //   useEffect(() => {
-//     if (selectedCategory && effectiveOrderType && (effectiveAddressId || effectiveBranchId)) {
+//     if (selectedCategory) {
 //       refetchProducts();
 //       setSelectedSubCategory(null);
 //     }
-//   }, [selectedCategory, refetchProducts, effectiveAddressId, effectiveBranchId, effectiveOrderType]);
-
+//   }, [selectedCategory, refetchProducts]);
 
 //   // Scroll functions for categories
 //   const scrollLeft = () => {
@@ -188,10 +187,11 @@
 
 //   // Handle category click
 //   const handleCategoryClick = useCallback(
-//     (id) => {
-//       setSelectedCategory(id);
+//     (categoryId) => {
+//       setSelectedCategory(categoryId);
 //       const query = new URLSearchParams();
 
+//       // Only add location parameters if they exist
 //       if (effectiveOrderType === 'delivery' && effectiveAddressId) {
 //         query.set('address_id', effectiveAddressId);
 //         query.set('order_type', 'delivery');
@@ -200,7 +200,7 @@
 //         query.set('order_type', 'take_away');
 //       }
 
-//       navigate(`/products/${id}?${query.toString()}`);
+//       navigate(`/products/${categoryId}?${query.toString()}`);
 //       window.scrollTo(0, 0);
 //     },
 //     [navigate, effectiveAddressId, effectiveBranchId, effectiveOrderType]
@@ -217,7 +217,8 @@
 //     ? productsData.filter((product) => product.sub_category_id === selectedSubCategory)
 //     : productsData;
 
-//   if (loadingCategories) {
+//   // Show loading only if we're actively loading categories and no categories exist yet
+//   if (loadingCategories && categoriesData.length === 0) {
 //     return (
 //       <div className="flex justify-center items-center py-12">
 //         <StaticSpinner />
@@ -249,26 +250,52 @@
 //               </div>
 //             )}
 //           </div>
-//           <div
-//             ref={scrollContainerRef}
-//             className="flex overflow-x-auto scrollbar-hide space-x-3 pb-2"
-//             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-//           >
-//             {categoriesData.map((category) => (
-//               <button
-//                 key={category.id}
-//                 onClick={() => handleCategoryClick(category.id)}
-//                 className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === category.id
-//                     ? 'bg-mainColor text-white'
-//                     : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+          
+//           {categoriesData.length > 0 ? (
+//             <div
+//               ref={scrollContainerRef}
+//               className="flex overflow-x-auto scrollbar-hide space-x-3 pb-2"
+//               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+//             >
+//               {categoriesData.map((category) => (
+//                 <button
+//                   key={category.id}
+//                   onClick={() => handleCategoryClick(category.id)}
+//                   className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+//                     selectedCategory === category.id
+//                       ? 'bg-mainColor text-white'
+//                       : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
 //                   }`}
-//               >
-//                 {category.name}
-//               </button>
-//             ))}
-//           </div>
+//                 >
+//                   {category.name}
+//                 </button>
+//               ))}
+//             </div>
+//           ) : (
+//             <div className="text-center py-4">
+//               <p className="text-gray-500">No categories available</p>
+//             </div>
+//           )}
 //         </div>
 //       </div>
+
+//       {/* Location Warning Banner */}
+//       {(!effectiveAddressId && !effectiveBranchId) && (
+//         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+//           <div className="flex">
+//             <div className="flex-shrink-0">
+//               <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+//                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+//               </svg>
+//             </div>
+//             <div className="ml-3">
+//               <p className="text-sm text-yellow-700">
+//                 <strong>Note:</strong> Showing all products. For location-specific availability and pricing, please select a delivery address or branch.
+//               </p>
+//             </div>
+//           </div>
+//         </div>
+//       )}
 
 //       {/* Subcategories */}
 //       {subCategories.length > 0 && (
@@ -278,10 +305,11 @@
 //             <div className="flex overflow-x-auto scrollbar-hide space-x-2">
 //               <button
 //                 onClick={() => setSelectedSubCategory(null)}
-//                 className={`flex-shrink-0 px-3 py-1 rounded-full text-xs transition-colors ${selectedSubCategory === null
+//                 className={`flex-shrink-0 px-3 py-1 rounded-full text-xs transition-colors ${
+//                   selectedSubCategory === null
 //                     ? 'bg-mainColor text-white'
 //                     : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-//                   }`}
+//                 }`}
 //               >
 //                 All
 //               </button>
@@ -289,10 +317,11 @@
 //                 <button
 //                   key={subCategory.id}
 //                   onClick={() => handleSubCategoryClick(subCategory.id)}
-//                   className={`flex-shrink-0 px-3 py-1 rounded-full text-xs transition-colors ${selectedSubCategory === subCategory.id
+//                   className={`flex-shrink-0 px-3 py-1 rounded-full text-xs transition-colors ${
+//                     selectedSubCategory === subCategory.id
 //                       ? 'bg-mainColor text-white'
 //                       : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-//                     }`}
+//                   }`}
 //                 >
 //                   {subCategory.name}
 //                 </button>
@@ -321,7 +350,17 @@
 //           </div>
 //         ) : (
 //           <div className="text-center py-12">
-//             <p className="text-gray-500 text-lg">No products found in this category.</p>
+//             <p className="text-gray-500 text-lg">
+//               {selectedCategory 
+//                 ? "No products found in this category." 
+//                 : "Please select a category to view products."
+//               }
+//             </p>
+//             {selectedCategory && (!effectiveAddressId && !effectiveBranchId) && (
+//               <p className="text-gray-400 text-sm mt-2">
+//                 Products may be available when you select a specific location.
+//               </p>
+//             )}
 //           </div>
 //         )}
 //       </div>
@@ -342,12 +381,13 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import StaticSpinner from '../../Components/Spinners/StaticSpinner';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 import { useGet } from '../../Hooks/useGet';
 import ProductCard from '../../Components/ProductCard';
 import { setTaxType } from '../../Store/Slices/taxTypeSlice';
 import { useAuth } from '../../Context/Auth';
 import { setSelectedBranch, setSelectedAddress, setOrderType } from '../../Store/Slices/orderTypeSlice';
+import debounce from 'lodash/debounce';
 
 const Products = () => {
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -366,8 +406,10 @@ const Products = () => {
 
   const [categoriesData, setCategoriesData] = useState([]);
   const [productsData, setProductsData] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(id ? parseInt(id) : null);
   const [selectedSubCategory, setSelectedSubCategory] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const scrollContainerRef = useRef(null);
 
   // Extract query parameters DIRECTLY from URL
@@ -406,57 +448,48 @@ const Products = () => {
     }
   }, [dispatch, urlOrderType, urlAddressId, urlBranchId, orderType, selectedAddressId, selectedBranchId]);
 
-  // Build API URL for categories - ALWAYS fetch categories even without location
+  // Build API URL for categories
   const buildCategoriesUrl = useCallback(() => {
     let url = `${apiUrl}/customer/home/categories?locale=${selectedLanguage}`;
-
-    // Add location parameters only if they exist
     if (effectiveAddressId && effectiveOrderType === 'delivery') {
       url += `&address_id=${effectiveAddressId}`;
     } else if (effectiveBranchId && effectiveOrderType === 'take_away') {
       url += `&branch_id=${effectiveBranchId}`;
     }
-
     return url;
   }, [apiUrl, selectedLanguage, effectiveAddressId, effectiveBranchId, effectiveOrderType]);
 
-  // Build API URL for products - ALWAYS fetch products if category exists
+  // Build API URL for products
   const buildProductsUrl = useCallback(() => {
     if (!selectedCategory) return null;
-
     let url = `${apiUrl}/customer/home/products_in_category/${selectedCategory}?locale=${selectedLanguage}${user ? `&user_id=${user.id}` : ""}`;
-
-    // Add location parameters only if they exist
     if (effectiveAddressId && effectiveOrderType === 'delivery') {
       url += `&address_id=${effectiveAddressId}`;
     } else if (effectiveBranchId && effectiveOrderType === 'take_away') {
       url += `&branch_id=${effectiveBranchId}`;
     }
-
     return url;
   }, [apiUrl, selectedCategory, selectedLanguage, effectiveAddressId, effectiveBranchId, effectiveOrderType, user]);
 
-  // Fetch categories - REMOVE required condition to always fetch
+  // Fetch categories
   const {
     refetch: refetchCategories,
     loading: loadingCategories,
     data: dataCategories,
   } = useGet({
     url: buildCategoriesUrl(),
-    // REMOVE this line: required: !!effectiveAddressId || !!effectiveBranchId
   });
 
-  // Fetch products - REMOVE required condition to always fetch if category exists
+  // Fetch products
   const {
     refetch: refetchProducts,
     loading: loadingProducts,
     data: dataProducts,
   } = useGet({
     url: buildProductsUrl(),
-    // required: !!selectedCategory, // Only require category, not location
   });
 
-  // Refetch when language changes or URL parameters change
+  // Refetch when language or location changes
   useEffect(() => {
     refetchCategories();
   }, [selectedLanguage, effectiveAddressId, effectiveBranchId, effectiveOrderType, refetchCategories]);
@@ -465,24 +498,18 @@ const Products = () => {
   useEffect(() => {
     if (dataCategories && !loadingCategories) {
       setCategoriesData(dataCategories.categories || []);
-
-      // Set selected category from URL parameter
       if (id && !selectedCategory) {
         setSelectedCategory(parseInt(id));
       }
     }
   }, [dataCategories, loadingCategories, id, selectedCategory]);
 
-  // Auto-select first category if none selected but categories exist
+  // Auto-select first category if none selected
   useEffect(() => {
     if (!selectedCategory && categoriesData.length > 0) {
       const firstCategory = categoriesData[0].id;
       setSelectedCategory(firstCategory);
-
-      // Update URL to reflect the selected category
       const query = new URLSearchParams();
-      
-      // Only add location parameters if they exist
       if (effectiveOrderType === 'delivery' && effectiveAddressId) {
         query.set('address_id', effectiveAddressId);
         query.set('order_type', 'delivery');
@@ -490,12 +517,11 @@ const Products = () => {
         query.set('branch_id', effectiveBranchId);
         query.set('order_type', 'take_away');
       }
-
       navigate(`/products/${firstCategory}?${query.toString()}`, { replace: true });
     }
   }, [selectedCategory, categoriesData, effectiveOrderType, effectiveAddressId, effectiveBranchId, navigate]);
 
-  // Update products data
+  // Update products data and apply search filter
   useEffect(() => {
     if (dataProducts && !loadingProducts) {
       const prods = dataProducts.products || [];
@@ -504,11 +530,34 @@ const Products = () => {
     }
   }, [dataProducts, loadingProducts, dispatch]);
 
+  // Debounced search filtering
+  const filterProducts = useCallback(
+    debounce((query, products, subCategoryId) => {
+      let filtered = products;
+      if (subCategoryId) {
+        filtered = filtered.filter((product) => product.sub_category_id === subCategoryId);
+      }
+      if (query) {
+        filtered = filtered.filter((product) =>
+          product.name.toLowerCase().includes(query.toLowerCase())
+        );
+      }
+      setFilteredProducts(filtered);
+    }, 300),
+    []
+  );
+
+  // Update filtered products when products, subcategory, or search query changes
+  useEffect(() => {
+    filterProducts(searchQuery, productsData, selectedSubCategory);
+  }, [productsData, selectedSubCategory, searchQuery, filterProducts]);
+
   // Refetch products when selected category changes
   useEffect(() => {
     if (selectedCategory) {
       refetchProducts();
       setSelectedSubCategory(null);
+      setSearchQuery(''); // Reset search when category changes
     }
   }, [selectedCategory, refetchProducts]);
 
@@ -530,8 +579,6 @@ const Products = () => {
     (categoryId) => {
       setSelectedCategory(categoryId);
       const query = new URLSearchParams();
-
-      // Only add location parameters if they exist
       if (effectiveOrderType === 'delivery' && effectiveAddressId) {
         query.set('address_id', effectiveAddressId);
         query.set('order_type', 'delivery');
@@ -539,7 +586,6 @@ const Products = () => {
         query.set('branch_id', effectiveBranchId);
         query.set('order_type', 'take_away');
       }
-
       navigate(`/products/${categoryId}?${query.toString()}`);
       window.scrollTo(0, 0);
     },
@@ -551,11 +597,18 @@ const Products = () => {
     setSelectedSubCategory(subCategoryId);
   }, []);
 
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Clear search input
+  const handleClearSearch = () => {
+    setSearchQuery('');
+  };
+
   const currentCategory = categoriesData.find((cat) => cat.id === selectedCategory);
   const subCategories = currentCategory?.sub_categories || [];
-  const filteredProducts = selectedSubCategory
-    ? productsData.filter((product) => product.sub_category_id === selectedSubCategory)
-    : productsData;
 
   // Show loading only if we're actively loading categories and no categories exist yet
   if (loadingCategories && categoriesData.length === 0) {
@@ -571,7 +624,7 @@ const Products = () => {
       {/* Categories Navigation */}
       <div className="sticky top-0 z-10 bg-white shadow-md py-4 px-4">
         <div className="max-w-7xl mx-auto relative">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-mainColor">Categories</h2>
             {categoriesData.length > 1 && (
               <div className="flex space-x-2">
@@ -590,7 +643,7 @@ const Products = () => {
               </div>
             )}
           </div>
-          
+
           {categoriesData.length > 0 ? (
             <div
               ref={scrollContainerRef}
@@ -673,6 +726,30 @@ const Products = () => {
 
       {/* Products Grid */}
       <div className="max-w-7xl mx-auto p-4">
+        {/* Search Input */}
+        <div className="relative mb-6">
+          <div className="w-full md:w-3/6 xl:w-2/6">
+            <div className="relative flex-grow">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search products..."
+                className="w-full py-2.5 pl-10 pr-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-mainColor focus:border-mainColor transition-all duration-300 bg-white shadow-sm placeholder-gray-400 text-gray-800"
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              {searchQuery && (
+                <button
+                  onClick={handleClearSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  <X className="h-5 w-5 text-gray-400" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
         {loadingProducts ? (
           <div className="flex justify-center items-center py-12">
             <StaticSpinner />
@@ -691,8 +768,10 @@ const Products = () => {
         ) : (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">
-              {selectedCategory 
-                ? "No products found in this category." 
+              {searchQuery
+                ? "No products match your search."
+                : selectedCategory
+                ? "No products found in this category."
                 : "Please select a category to view products."
               }
             </p>

@@ -284,6 +284,7 @@ const ProductDetails = ({ product, onClose, language }) => {
     if (!canAddToCart()) return;
 
     if (!user) {
+      onClose();
       auth.toastError(t('please Login First')); // show toast
       setTimeout(() => navigate("/login"), 1500); // redirect after short delay
       return;
