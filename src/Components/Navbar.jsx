@@ -135,7 +135,7 @@ const Navbar = () => {
                         <img
                             src={mainData.logo_link}
                             alt={mainData?.name || "Logo"}
-                            className="h-8 w-8 sm:h-10 sm:w-10 object-contain"
+                            className="h-8 w-8 sm:h-10 sm:w-10 object-contain rounded-full"
                             onError={(e) => {
                                 e.target.style.display = 'none';
                                 e.target.nextSibling.style.display = 'flex';
