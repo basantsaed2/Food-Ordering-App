@@ -130,7 +130,7 @@ const Navbar = () => {
     const renderLogo = () => {
         return (
             <div className="flex items-center space-x-3">
-                <div className="bg-white rounded-full p-2 shadow-md flex items-center justify-center">
+                <div className="bg-white rounded-full shadow-md flex items-center justify-center">
                     {mainData?.logo_link ? (
                         <img
                             src={mainData.logo_link}
