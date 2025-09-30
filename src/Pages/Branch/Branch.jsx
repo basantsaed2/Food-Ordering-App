@@ -17,8 +17,7 @@ const Branch = () => {
   const { t, i18n } = useTranslation();
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
   const { refetch: refetchLocations, loading: loadingLocationsData, data: dataLocations } = useGet({
-    url: `${apiUrl}/customer/address`,
-    required: true,
+    url: `${apiUrl}/customer/address/lists1`,
   });
   const [branches, setBranches] = useState([]);
   const [callCenterPhone, setCallCenterPhone] = useState('');

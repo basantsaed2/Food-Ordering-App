@@ -39,7 +39,7 @@ const OrderType = () => {
     data: addressData,
     error: addressError,
   } = useGet({
-    url: `${apiUrl}/customer/address?locale=${selectedLanguage}`,
+    url: `${apiUrl}/customer/address/addresses?locale=${selectedLanguage}`,
     required: !!user?.token,
     autoFetch:false
   });
@@ -50,7 +50,7 @@ const OrderType = () => {
     data: branchesData,
     error: branchesError,
   } = useGet({
-    url: `${apiUrl}/customer/order_type?locale=${selectedLanguage}`,
+    url: `${apiUrl}/customer/address/lists1?locale=${selectedLanguage}`,
   });
 
   // const {
