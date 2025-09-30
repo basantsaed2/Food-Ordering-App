@@ -13,6 +13,7 @@ const Cart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { items, subtotal, total, itemCount, totalDiscount, totalTax, priceAfterDiscount } = useSelector(state => state.cart);
+  const taxSysType = useSelector(state => state.taxType?.data || 'included');
 
   // Check if any item has excluded tax
   const hasExcludedTax = items.some(item => {
@@ -80,7 +81,7 @@ const Cart = () => {
                         <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.product.description}</p>
 
                         {/* Tax Info */}
-                        {item.taxDetails && item.taxDetails.totalTax > 0 && (
+                        {(item.taxDetails && item.taxDetails.totalTax > 0 ) && taxSysType !== "included" && (
                           <div className="mb-2">
                             <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                               Tax (Product & Addons): {item.taxDetails.totalTax.toFixed(2)} EGP
@@ -242,7 +243,7 @@ const Cart = () => {
                 <span>{priceAfterDiscount.toFixed(2)} EGP</span>
               </div>
 
-              {hasExcludedTax && totalTax > 0 && (
+              {(hasExcludedTax && totalTax > 0 ) && taxSysType !== "included" && (
                 <div className="flex justify-between text-orange-600">
                   <span>Tax (Product & Addons)</span>
                   <span>+{totalTax.toFixed(2)} EGP</span>
@@ -252,13 +253,19 @@ const Cart = () => {
               <div className="border-t pt-3">
                 <div className="flex justify-between text-lg font-bold text-gray-900">
                   <span>Total</span>
-                  <span>{total.toFixed(2)} EGP</span>
+                  {
+                    taxSysType === "included" ? (
+                     <span>{priceAfterDiscount.toFixed(2)} EGP </span>
+                    ) : (
+                     <span>{total.toFixed(2)} EGP </span>
+                    )
+                  }
                 </div>
               </div>
             </div>
 
             {/* Tax Breakdown Modal Trigger */}
-            {hasExcludedTax && (
+            {hasExcludedTax && taxSysType !== "included" && (
               <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                 <details className="text-sm">
                   <summary className="cursor-pointer font-medium text-gray-700">View Tax Breakdown</summary>

@@ -20,12 +20,15 @@ import {
     ChevronDown,
     ChevronUp
 } from 'lucide-react';
+import { useAuth } from "../../Context/Auth";
 
 const CheckOut = () => {
     const { t } = useTranslation();
     const apiUrl = import.meta.env.VITE_API_BASE_URL;
     const navigate = useNavigate();
     const cart = useSelector(state => state.cart);
+    const taxSysType = useSelector(state => state.taxType?.data || 'included');
+    const auth = useAuth();
 
     // Get IDs from orderType slice
     const orderType = useSelector(state => state.orderType?.orderType);
@@ -72,6 +75,7 @@ const CheckOut = () => {
     const [orderSummary, setOrderSummary] = useState({
         subtotal: 0,
         discount: 0,
+        priceAfterDiscount: 0,
         tax: 0,
         delivery: 0,
         total: 0
@@ -136,9 +140,10 @@ const CheckOut = () => {
             setOrderSummary({
                 subtotal: cart.subtotal,
                 discount: cart.totalDiscount,
+                priceAfterDiscount: cart.priceAfterDiscount,
                 tax: cart.totalTax,
                 delivery: deliveryPrice,
-                total: cart.total + deliveryPrice
+                total: cart.total 
             });
         }
     }, [cart, orderType, selectedAddress]);
@@ -290,7 +295,7 @@ const CheckOut = () => {
             receipt: receiptFile,
             branch_id: orderType === 'take_away' ? selectedBranchId : "",
             address_id: orderType === 'delivery' ? selectedAddressId : "",
-            amount: orderSummary.total,
+            amount: taxSysType === "included" ? (orderSummary.subtotal - orderSummary.discount || orderSummary.priceAfterDiscount) : orderSummary.total,
             total_tax: cart.totalTax,
             total_discount: cart.totalDiscount,
             delivery_price: orderSummary.delivery,
@@ -304,23 +309,22 @@ const CheckOut = () => {
 
     const handleSendOrder = async () => {
         if (!selectedPaymentMethod) {
-            alert(t('pleaseSelectPaymentMethod'));
+            auth.toastError(t('pleaseSelectPaymentMethod'));
             return;
         }
 
         // Validate that required location is selected
         if (orderType === 'delivery' && !selectedAddressId) {
-            alert('Please select a delivery address');
+            auth.toastError('Please select a delivery address');
             return;
         }
 
         if (orderType === 'take_away' && !selectedBranchId) {
-            alert('Please select a branch');
+            auth.toastError('Please select a branch');
             return;
         }
 
         const orderData = prepareOrderData();
-        console.log('Sending order data:', orderData);
 
         try {
             await postOrder(orderData);
@@ -584,7 +588,14 @@ const CheckOut = () => {
                                     </div>
                                 )}
 
-                                {orderSummary.tax > 0 && (
+                                {orderSummary.priceAfterDiscount > 0 && (
+                                    <div className="flex justify-between text-blue-600">
+                                        <span>{t('priceAfterDiscount')}</span>
+                                        <span>-{orderSummary.priceAfterDiscount.toFixed(2)} EGP</span>
+                                    </div>
+                                )}
+
+                                {(orderSummary.tax > 0) && taxSysType !== "included" && (
                                     <div className="flex justify-between text-blue-600">
                                         <span>{t('tax')}</span>
                                         <span>+{orderSummary.tax.toFixed(2)} EGP</span>
@@ -601,9 +612,18 @@ const CheckOut = () => {
                                 <div className="border-t pt-3">
                                     <div className="flex justify-between text-lg font-bold text-gray-900">
                                         <span>{t('total')}</span>
-                                        <span>{orderSummary.total.toFixed(2)} EGP</span>
+                                        {taxSysType === "included" ? (
+                                            <span>
+                                                {((orderSummary.subtotal - orderSummary.discount) || orderSummary.priceAfterDiscount) + orderSummary.delivery} EGP
+                                            </span>
+                                        ) : (
+                                            <span>
+                                                {(orderSummary.total + orderSummary.delivery).toFixed(2)} EGP
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
+
                             </div>
 
                             {/* Security Badge */}
@@ -621,10 +641,10 @@ const CheckOut = () => {
                                     (orderType === 'delivery' && !selectedAddressId) ||
                                     (orderType === 'take_away' && !selectedBranchId)}
                                 className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-200 ${loadingOrder || !selectedPaymentMethod ||
-                                        (orderType === 'delivery' && !selectedAddressId) ||
-                                        (orderType === 'take_away' && !selectedBranchId)
-                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                        : 'bg-gradient-to-r from-mainColor to-blue-600 text-white hover:shadow-lg transform hover:scale-105'
+                                    (orderType === 'delivery' && !selectedAddressId) ||
+                                    (orderType === 'take_away' && !selectedBranchId)
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-mainColor to-blue-600 text-white hover:shadow-lg transform hover:scale-105'
                                     }`}
                             >
                                 {loadingOrder ? (
