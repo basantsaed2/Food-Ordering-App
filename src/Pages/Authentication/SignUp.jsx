@@ -183,7 +183,7 @@ const SignUpPage = () => {
                                     <div className="mb-6 flex justify-center">
                                         <MdFastfood className="w-24 h-24 text-white" />
                                     </div>
-                                    <h2 className="text-3xl font-bold mb-4">Food2Go</h2>
+                                    <h2 className="text-3xl font-bold mb-4">{`${selectedLanguage === "en" ? mainData?.name : mainData?.ar_name}`}</h2>
                                     <p className="text-red-100">Delicious meals delivered to your door</p>
                                 </div>
                                 <div className="absolute top-10 left-10 w-16 h-16 rounded-full bg-white/10"></div>
@@ -197,7 +197,7 @@ const SignUpPage = () => {
                                     <h1 className="text-3xl font-bold text-red-800 mb-2">
                                         Sign Up to {selectedLanguage === 'en' ? mainData?.name : mainData?.ar_name}
                                     </h1>
-                                    <p className="text-red-600">Create your Food2Go account</p>
+                                    <p className="text-red-600">Create your {`${selectedLanguage === "en" ? mainData?.name : mainData?.ar_name}`} account</p>
                                 </div>
 
                                 <form onSubmit={handleSignUp} className="space-y-5">

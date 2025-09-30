@@ -41,6 +41,7 @@ const OrderType = () => {
   } = useGet({
     url: `${apiUrl}/customer/address?locale=${selectedLanguage}`,
     required: !!user?.token,
+    autoFetch:false
   });
 
   const {
@@ -52,13 +53,13 @@ const OrderType = () => {
     url: `${apiUrl}/customer/order_type?locale=${selectedLanguage}`,
   });
 
-  const {
-    refetch: refetchCategories,
-    loading: loadingCategories,
-    data: categoriesData,
-  } = useGet({
-    url: `${apiUrl}/customer/home/categories?locale=${selectedLanguage}`,
-  });
+  // const {
+  //   refetch: refetchCategories,
+  //   loading: loadingCategories,
+  //   data: categoriesData,
+  // } = useGet({
+  //   url: `${apiUrl}/customer/home/categories?locale=${selectedLanguage}`,
+  // });
 
   // Delete address hook
   const { deleteData } = useDelete();
@@ -91,10 +92,12 @@ const OrderType = () => {
 
   // Fetch data on mount and language change
   useEffect(() => {
+    if (user?.token){
     refetchAddress();
+    }
     refetchBranches();
-    refetchCategories();
-  }, [selectedLanguage, refetchAddress, refetchBranches, refetchCategories]);
+    // refetchCategories();
+  }, [selectedLanguage, refetchAddress, refetchBranches]);
 
   // Process address data
   useEffect(() => {
@@ -125,17 +128,17 @@ const OrderType = () => {
   }, [branchesData, loadingBranches, branchesError, auth, t, selectedOrderType, dispatch]);
 
   // Process categories data
-  useEffect(() => {
-    if (categoriesData && !loadingCategories) {
-      setCategories(categoriesData.categories || []);
-    }
-  }, [categoriesData, loadingCategories]);
+  // useEffect(() => {
+  //   if (categoriesData && !loadingCategories) {
+  //     setCategories(categoriesData.categories || []);
+  //   }
+  // }, [categoriesData, loadingCategories]);
 
   // Handle order type selection
   const handleOrderTypeSelect = useCallback(
     (typeObj) => {
       if (typeObj.type === 'delivery' && !user?.token) {
-        navigate('/auth/login', { replace: true });
+        navigate('/login', { replace: true });
         return;
       }
       setSelectedOrderType(typeObj.type);
@@ -152,11 +155,12 @@ const OrderType = () => {
         return;
       }
       dispatch(setSelectedAddress(address.id));
-      const firstCategoryId = categories[0]?.id;
+      // const firstCategoryId = categories[0]?.id;
       const query = `address_id=${address.id}&order_type=delivery`;
-      navigate(firstCategoryId ? `/products/${firstCategoryId}?${query}` : `/products/${address.id}?${query}`, { replace: true });
+      // navigate(firstCategoryId ? `/products/${firstCategoryId}?${query}` : `/products/${address.id}?${query}`, { replace: true });
+      navigate(`/products?${query}`, { replace: true });
     },
-    [dispatch, navigate, auth, t, categories]
+    [dispatch, navigate, auth, t]
   );
 
   // Handle branch selection
@@ -167,11 +171,12 @@ const OrderType = () => {
         return;
       }
       dispatch(setSelectedBranch(branch.id));
-      const firstCategoryId = categories[0]?.id;
+      // const firstCategoryId = categories[0]?.id;
       const query = `branch_id=${branch.id}&order_type=take_away`;
-      navigate(firstCategoryId ? `/products/${firstCategoryId}?${query}` : `/products/${branch.id}?${query}`, { replace: true });
+      // navigate(firstCategoryId ? `/products/${firstCategoryId}?${query}` : `/products/${branch.id}?${query}`, { replace: true });
+      navigate(`/products?${query}`, { replace: true });
     },
-    [dispatch, navigate, auth, t, categories]
+    [dispatch, navigate, auth, t]
   );
 
   // Handle address deletion
@@ -201,7 +206,7 @@ const OrderType = () => {
   // Handle add new address
   const handleAddAddress = useCallback(() => {
     if (!user?.token) {
-      navigate('/auth/login', { replace: true });
+      navigate('/login', { replace: true });
       return;
     }
     navigate('/add_address');
@@ -215,7 +220,7 @@ const OrderType = () => {
   };
 
   // Skeleton Loading State
-  if (loadingAddress || loadingBranches || loadingCategories) {
+  if (loadingAddress || loadingBranches ) {
     return (
       <div className="flex flex-col w-full gap-3 mb-5">
         <div className="flex flex-col w-full gap-5 p-4 lg:flex-row">

@@ -15,23 +15,23 @@ const LandingPage = () => {
     const selectedLanguage = useSelector((state) => state.language?.selected ?? 'en');
 
     return (
-        <div>
-            <div className={`w-full h-full flex flex-col md:flex-row pb-0 p-2 md:p-6 justify-center`}>
+        <div className={`w-full h-screen flex flex-col gap-6 items-center justify-center overflow-hidden`}>
+            <div className={`w-full flex flex-col md:flex-row pb-0 p-2 md:p-6`}>
 
-                <div className={`w-full md:w-1/2 h-full flex flex-col items-center`}>
+                <div className={`w-full md:w-1/2 flex flex-col items-center`}>
                     <img src={mainData?.logo_link} width={180} height={180} alt="Main Logo" />
                     <div className="flex items-center justify-center gap-2">
                         <h1 className="text-2xl font-semibold text-mainColor">{selectedLanguage === "en" ? mainData?.name : mainData?.ar_name}</h1>
                     </div>
                 </div>
 
-                <div className={`w-full md:w-1/2 h-full flex flex-col gap-3 p-2 md:p-4 items-center justify-center`}>
+                <div className={`w-full md:w-1/2 flex flex-col gap-3 p-2 md:p-4 items-center justify-center`}>
                     <div className="flex gap-5">
                         <Link to="/menu" className="bg-thirdColor flex flex-col gap-3  items-center justify-center rounded-xl p-2 md:p-6">
                             <MenuIcon />
                             <h1 className="text-2xl text-mainColor">{t("Menu")}</h1>
                         </Link>
-                        <Link to="/home" className="bg-thirdColor flex flex-col gap-3  items-center justify-center rounded-xl p-2 md:p-6">
+                        <Link to="/order_online" className="bg-thirdColor flex flex-col gap-3  items-center justify-center rounded-xl p-2 md:p-6">
                             <DashIcon />
                             <h1 className="text-2xl text-mainColor">{t("OrderNow")}</h1>
                         </Link>

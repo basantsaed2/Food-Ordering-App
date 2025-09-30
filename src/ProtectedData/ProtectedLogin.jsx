@@ -1,36 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../Context/Auth';
+import { useSelector } from 'react-redux';
 
 const ProtectedLogin = () => {
        const auth = useAuth();
        const navigate = useNavigate();
        const location = useLocation();
-       const user = auth.user;
+       const user = useSelector((state) => state.user?.data);
 
        const [isToastShown, setIsToastShown] = useState(false);
 
        useEffect(() => {
-              const isAuth = location.pathname === '/auth/login' || location.pathname === '/auth/sign_up';
+              const isAuth = location.pathname === '/login' || location.pathname === '/signup';
               const profile = location.pathname === '/profile';
-              const favorites = location.pathname === '/favorites';
+              const favorites = location.pathname === '/favorite_product';
               const checkOut = location.pathname === '/check_out';
-              // const orders = location.pathname === '/orders';
-              const ordersHistory = location.pathname === '/orders/history';
-              const orderTraking = location.pathname === '/orders/order_traking';
+              const cart = location.pathname === '/cart';
+              // const ordersHistory = location.pathname === '/orders/history';
+              const orderTraking = location.pathname === '/order_traking/:orderId';
 
               if (user && isAuth) {
                      navigate('/', { replace: true });
                      return;
               }
 
-              // if (!user && (profile || favorites || checkOut || orders || ordersHistory || orderTraking)) {
-              //        if (!isToastShown) {
-              //               // auth.toastError('You must be logged in to continue');
-              //               setIsToastShown(true);
-              //        }
-              //        navigate('/auth/login', { replace: true });
-              // }
+              if (!user && (profile || favorites || checkOut || cart || orderTraking)) {
+                     if (!isToastShown) {
+                            auth.toastError('You must be logged in to continue');
+                            setIsToastShown(true);
+                     }
+                     navigate('/login', { replace: true });
+              }
        }, [user, location.pathname, isToastShown, navigate, auth]);
 
        return <Outlet />;

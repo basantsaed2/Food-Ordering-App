@@ -118,7 +118,7 @@ const App = () => {
           <div className="sticky top-0 z-40 w-full">
             <Navbar />
           </div>
-          <div className="w-full mb-5">
+          <div className="w-full">
             <Outlet />
           </div>
           {/* <Footer /> */}

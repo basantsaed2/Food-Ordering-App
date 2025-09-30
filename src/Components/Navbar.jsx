@@ -5,6 +5,7 @@ import { setLanguage, setLanguages } from '../Store/Slices/languageSlice';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import mainLogo from '../assets/Images/mainLogo.jpeg'
+import { useAuth } from '../Context/Auth';
 
 const Navbar = () => {
     const dispatch = useDispatch();
@@ -15,6 +16,8 @@ const Navbar = () => {
     const cart = useSelector(state => state.cart);
     const languages = useSelector(state => state.language?.data || []);
     const selectedLanguage = useSelector(state => state.language?.selected || 'en');
+    const [pages] = useState(['/login', '/signup']);
+    const auth = useAuth();
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -104,8 +107,9 @@ const Navbar = () => {
     };
 
     const handleLogout = () => {
+        auth.logout();
         // Add your logout logic here
-        navigate('/login');
+        navigate('/');
         setIsMobileMenuOpen(false);
         setIsProfileDropdownOpen(false);
     };
@@ -264,282 +268,290 @@ const Navbar = () => {
 
     return (
         <>
-            <nav className="shadow-lg relative z-40" style={{ backgroundColor: 'var(--color-main)' }}>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16 lg:h-20">
-                        {/* Logo with Name */}
-                        <Link to="/" className="flex-shrink-0 hover:opacity-90 transition-opacity">
-                            {renderLogo()}
-                        </Link>
+            {pages.some(page => location.pathname === page) ? (
+                ''
+            ) : (
+                <nav className="shadow-lg relative z-40" style={{ backgroundColor: 'var(--color-main)' }}>
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between items-center h-16 lg:h-20">
+                            {/* Logo with Name */}
+                            <Link to="/" className="flex-shrink-0 hover:opacity-90 transition-opacity">
+                                {renderLogo()}
+                            </Link>
 
-                        {/* Desktop Navigation */}
-                        <div className="hidden xl:flex xl:items-center xl:space-x-8">
-                            {menuItems.map((item, index) => (
-                                <Link
-                                    key={index}
-                                    to={item.path}
-                                    className="text-white hover:text-gray-200 transition-all duration-200 font-medium flex items-center space-x-2 group relative"
-                                >
-                                    <item.icon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                                    <span>{t(item.i18nKey)}</span>
-                                </Link>
-                            ))}
-                        </div>
-
-                        {/* Desktop Right Side Icons */}
-                        <div className="hidden xl:flex xl:items-center lg:space-x-6">
-                            {/* Favorites */}
-                            {
-                                user && (
-                                    <>
-                                        <Link
-                                            to="/favorite_product"
-                                            className="relative p-2 text-white hover:text-gray-200 transition-colors group"
-                                        >
-                                            <Heart className="h-6 w-6 group-hover:scale-110 transition-transform" />
-                                            {favCount > 0 && (
-                                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                                                    {favCount}
-                                                </span>
-                                            )}
-                                        </Link>
-
-                                        {/* Cart */}
-                                        <Link
-                                            to="/cart"
-                                            className="relative p-2 text-white hover:text-gray-200 transition-colors group"
-                                        >
-                                            <ShoppingCart className="h-6 w-6 group-hover:scale-110 transition-transform" />
-                                            {cartCount > 0 && (
-                                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                                                    {cartCount}
-                                                </span>
-                                            )}
-                                        </Link>
-                                    </>
-                                )
-                            }
-
-                            {/* Language Toggle - Desktop */}
-                            <div className="relative" ref={languageDropdownRef}>
-                                <button
-                                    onClick={toggleLanguageDropdown}
-                                    className="text-white hover:text-gray-200 transition-colors flex items-center space-x-2 bg-white bg-opacity-20 rounded-full px-4 py-2 group"
-                                >
-                                    <Globe className="h-4 w-4" />
-                                    <span className="font-medium">{currentLanguageName}</span>
-                                </button>
-                                <LanguageDropdown />
-                            </div>
-
-                            {/* Profile/Login */}
-                            {isLoggedIn ? (
-                                <div className="relative" ref={profileDropdownRef}>
-                                    <button
-                                        onClick={toggleProfileDropdown}
-                                        className="flex items-center space-x-3 text-white hover:text-gray-200 transition-colors group p-1 rounded-lg"
-                                    >
-                                        {renderUserProfile()}
-                                        <span className="font-medium hidden lg:block">
-                                            {user?.name || t('profile')}
-                                        </span>
-                                        <div className={`transform transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`}>
-                                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </div>
-                                    </button>
-                                    <ProfileDropdown />
-                                </div>
-                            ) : (
-                                <button
-                                    onClick={handleLogin}
-                                    className="text-white px-6 py-2 rounded-full font-medium bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 border border-white border-opacity-30"
-                                    style={{ color: 'var(--color-main)' }}
-                                >
-                                    <span style={{ color: 'white' }}>{t('login')}</span>
-                                </button>
-                            )}
-                        </div>
-
-                        {/* Mobile Menu Button Area */}
-                        <div className="xl:hidden flex items-center space-x-4">
-                            {/* Cart Icon */}
-                            {user && (
-                                <Link to="/cart" className="text-white relative p-2">
-                                    <ShoppingCart className="h-5 w-5" />
-                                    {cartCount > 0 && (
-                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">
-                                            {cartCount}
-                                        </span>
-                                    )}
-                                </Link>
-                            )}
-
-                             <div className="relative" ref={languageDropdownRef}>
-                                <button
-                                    onClick={toggleLanguageDropdown}
-                                    className="text-white hover:text-gray-200 transition-colors flex items-center space-x-2 bg-white bg-opacity-20 rounded-full px-4 py-2 group"
-                                >
-                                    <Globe className="h-4 w-4" />
-                                    <span className="font-medium">{currentLanguageName}</span>
-                                </button>
-                                <LanguageDropdown />
-                            </div>
-
-                            {/* Mobile Menu Button */}
-                            <button
-                                onClick={toggleMobileMenu}
-                                className="text-white hover:text-gray-200 transition-colors p-2 rounded-lg bg-white bg-opacity-10"
-                            >
-                                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-
-            {/* Enhanced Mobile Sidebar - Starts after navbar */}
-            <div className={`fixed inset-0 z-50 xl:hidden transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-                }`} style={{ top: '4rem' }}> {/* Adjusted to start after navbar */}
-
-                {/* Backdrop */}
-                <div
-                    className={`absolute inset-0 bg-black transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-50' : 'opacity-0'
-                        }`}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                />
-
-                {/* Sidebar */}
-                <div className={`absolute top-0 left-0 h-full w-80 max-w-full bg-white shadow-2xl transform transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-                    }`}>
-                    <div className="flex flex-col h-full">
-                        {/* Scrollable Content - Starts immediately without header */}
-                        <div className="flex-1 overflow-y-auto">
-                            {/* Profile Section */}
-                            <div className="p-6 border-b border-gray-100">
-                                {isLoggedIn ? (
-                                    <div className="flex items-center">
-                                        {renderUserProfile()}
-                                        <button onClick={() => navigate('/profile')} className="flex-1 min-w-0">
-                                            <p className="font-semibold text-gray-900 truncate">
-                                                {user?.name || t('user')}
-                                            </p>
-                                            <p className="text-gray-600 text-sm truncate">
-                                                {user?.email || t('manageAccount')}
-                                            </p>
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <button
-                                        onClick={handleLogin}
-                                        className="w-full text-white py-3 rounded-lg font-medium hover:opacity-90 transition-all duration-200 shadow-lg"
-                                        style={{ backgroundColor: 'var(--color-main)' }}
-                                    >
-                                        {t('loginSignUp')}
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Menu Items */}
-                            <div className="p-4 space-y-2">
+                            {/* Desktop Navigation */}
+                            <div className="hidden xl:flex xl:items-center xl:space-x-8">
                                 {menuItems.map((item, index) => (
                                     <Link
                                         key={index}
                                         to={item.path}
-                                        className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
-                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="text-white hover:text-gray-200 transition-all duration-200 font-medium flex items-center space-x-2 group relative"
                                     >
-                                        <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors" style={{ backgroundColor: 'var(--color-main)', opacity: 0.1 }}>
-                                            <item.icon className="h-6 w-6" style={{ color: 'var(--color-main)' }} />
-                                        </div>
-                                        <span className="text-gray-800 font-medium text-lg">
-                                            {t(item.i18nKey)}
-                                        </span>
+                                        <item.icon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                        <span>{t(item.i18nKey)}</span>
                                     </Link>
                                 ))}
+                            </div>
 
+                            {/* Desktop Right Side Icons */}
+                            <div className="hidden xl:flex xl:items-center lg:space-x-6">
                                 {/* Favorites */}
-                                {user && (
-                                    <Link
-                                        to="/favorite_product"
-                                        className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group relative"
-                                        onClick={() => setIsMobileMenuOpen(false)}
+                                {
+                                    user && (
+                                        <>
+                                            <Link
+                                                to="/favorite_product"
+                                                className="relative p-2 text-white hover:text-gray-200 transition-colors group"
+                                            >
+                                                <Heart className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                                                {favCount > 0 && (
+                                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                                                        {favCount}
+                                                    </span>
+                                                )}
+                                            </Link>
+
+                                            {/* Cart */}
+                                            <Link
+                                                to="/cart"
+                                                className="relative p-2 text-white hover:text-gray-200 transition-colors group"
+                                            >
+                                                <ShoppingCart className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                                                {cartCount > 0 && (
+                                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                                                        {cartCount}
+                                                    </span>
+                                                )}
+                                            </Link>
+                                        </>
+                                    )
+                                }
+
+                                {/* Language Toggle - Desktop */}
+                                <div className="relative" ref={languageDropdownRef}>
+                                    <button
+                                        onClick={toggleLanguageDropdown}
+                                        className="text-white hover:text-gray-200 transition-colors flex items-center space-x-2 bg-white bg-opacity-20 rounded-full px-4 py-2 group"
                                     >
-                                        <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors" style={{ backgroundColor: 'var(--color-main)', opacity: 0.1 }}>
-                                            <Heart className="h-6 w-6" style={{ color: 'var(--color-main)' }} />
-                                        </div>
-                                        <span className="text-gray-800 font-medium text-lg">
-                                            {t('favorites')}
-                                        </span>
-                                        {favCount > 0 && (
-                                            <span className="absolute right-4 bg-red-500 text-white text-sm rounded-full h-6 w-6 flex items-center justify-center font-bold">
-                                                {favCount}
+                                        <Globe className="h-4 w-4" />
+                                        <span className="font-medium">{currentLanguageName}</span>
+                                    </button>
+                                    <LanguageDropdown />
+                                </div>
+
+                                {/* Profile/Login */}
+                                {isLoggedIn ? (
+                                    <div className="relative" ref={profileDropdownRef}>
+                                        <button
+                                            onClick={toggleProfileDropdown}
+                                            className="flex items-center space-x-3 text-white hover:text-gray-200 transition-colors group p-1 rounded-lg"
+                                        >
+                                            {renderUserProfile()}
+                                            <span className="font-medium hidden lg:block">
+                                                {user?.name || t('profile')}
+                                            </span>
+                                            <div className={`transform transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`}>
+                                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </div>
+                                        </button>
+                                        <ProfileDropdown />
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={handleLogin}
+                                        className="text-white px-6 py-2 rounded-full font-medium bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 border border-white border-opacity-30"
+                                        style={{ color: 'var(--color-main)' }}
+                                    >
+                                        <span style={{ color: 'white' }}>{t('login')}</span>
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Mobile Menu Button Area */}
+                            <div className="xl:hidden flex items-center space-x-4">
+                                {/* Cart Icon */}
+                                {user && (
+                                    <Link to="/cart" className="text-white relative p-2">
+                                        <ShoppingCart className="h-5 w-5" />
+                                        {cartCount > 0 && (
+                                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">
+                                                {cartCount}
                                             </span>
                                         )}
                                     </Link>
                                 )}
 
-                                {/* Logout in Sidebar for logged-in users */}
-                                {isLoggedIn && (
+                                <div className="relative" ref={languageDropdownRef}>
                                     <button
-                                        onClick={() => {
-                                            handleLogout();
-                                            setIsMobileMenuOpen(false);
-                                        }}
-                                        className="flex items-center space-x-4 p-3 rounded-xl hover:bg-red-50 transition-all duration-200 group w-full text-left"
+                                        onClick={toggleLanguageDropdown}
+                                        className="text-white hover:text-gray-200 transition-colors flex items-center space-x-2 bg-white bg-opacity-20 rounded-full px-4 py-2 group"
                                     >
-                                        <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors" style={{ backgroundColor: 'red', opacity: 0.1 }}>
-                                            <LogOut className="h-6 w-6 text-red-600" />
-                                        </div>
-                                        <span className="text-red-600 font-medium text-lg">
-                                            {t('logout')}
-                                        </span>
+                                        <Globe className="h-4 w-4" />
+                                        <span className="font-medium">{currentLanguageName}</span>
                                     </button>
-                                )}
-                            </div>
+                                    <LanguageDropdown />
+                                </div>
 
-                            {/* Language Selector */}
-                            <div className="p-6 border-t border-gray-100">
-                                <div className="flex items-center justify-between mb-4">
-                                    <span className="text-gray-700 font-medium">{t('language')}</span>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {languages.map((lang) => (
-                                        <button
-                                            key={lang.code}
-                                            onClick={() => {
-                                                handleLanguageChange(lang.code);
-                                                setIsMobileMenuOpen(false);
-                                            }}
-                                            className={`p-3 rounded-lg border transition-all duration-200 ${selectedLanguage === lang.code
-                                                ? 'border-gray-300 bg-gray-100'
-                                                : 'border-gray-200 hover:border-gray-300'
-                                                }`}
-                                            style={selectedLanguage === lang.code ? { color: 'var(--color-main)', borderColor: 'var(--color-main)' } : {}}
-                                        >
-                                            <div className="flex items-center space-x-2 justify-center">
-                                                <span className="text-lg">{lang.flag}</span>
-                                                <span className="font-medium">{lang.name}</span>
-                                            </div>
-                                        </button>
-                                    ))}
-                                </div>
+                                {/* Mobile Menu Button */}
+                                <button
+                                    onClick={toggleMobileMenu}
+                                    className="text-white hover:text-gray-200 transition-colors p-2 rounded-lg bg-white bg-opacity-10"
+                                >
+                                    {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                                </button>
                             </div>
                         </div>
+                    </div>
+                </nav>
+            )}
 
-                        {/* Footer */}
-                        <div className="p-2 border-t border-gray-100 bg-gray-50">
-                            <div className="flex items-center justify-center space-x-3 text-gray-600">
-                                <Link to="https://food2go.online/" target="_blank" className="flex items-center justify-center gap-2">
-                                    <h1 className="text-gray-600">{t("Poweredby")}</h1>
-                                    <img src={mainLogo} className="w-16 h-16" alt="Main Logo" />
-                                </Link>
+            {/* Enhanced Mobile Sidebar - Starts after navbar */}
+            {pages.some(page => location.pathname === page) ? (
+                ''
+            ) : (
+                <div className={`fixed inset-0 z-50 xl:hidden transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                    }`} style={{ top: '4rem' }}> {/* Adjusted to start after navbar */}
+
+                    {/* Backdrop */}
+                    <div
+                        className={`absolute inset-0 bg-black transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-50' : 'opacity-0'
+                            }`}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    />
+
+                    {/* Sidebar */}
+                    <div className={`absolute top-0 left-0 h-full w-80 max-w-full bg-white shadow-2xl transform transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+                        }`}>
+                        <div className="flex flex-col h-full">
+                            {/* Scrollable Content - Starts immediately without header */}
+                            <div className="flex-1 overflow-y-auto">
+                                {/* Profile Section */}
+                                <div className="p-6 border-b border-gray-100">
+                                    {isLoggedIn ? (
+                                        <div className="flex items-center">
+                                            {renderUserProfile()}
+                                            <button onClick={() => navigate('/profile')} className="flex-1 min-w-0">
+                                                <p className="font-semibold text-gray-900 truncate">
+                                                    {user?.name || t('user')}
+                                                </p>
+                                                <p className="text-gray-600 text-sm truncate">
+                                                    {user?.email || t('manageAccount')}
+                                                </p>
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={handleLogin}
+                                            className="w-full text-white py-3 rounded-lg font-medium hover:opacity-90 transition-all duration-200 shadow-lg"
+                                            style={{ backgroundColor: 'var(--color-main)' }}
+                                        >
+                                            {t('loginSignUp')}
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Menu Items */}
+                                <div className="p-4 space-y-2">
+                                    {menuItems.map((item, index) => (
+                                        <Link
+                                            key={index}
+                                            to={item.path}
+                                            className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors" style={{ backgroundColor: 'var(--color-main)', opacity: 0.1 }}>
+                                                <item.icon className="h-6 w-6" style={{ color: 'var(--color-main)' }} />
+                                            </div>
+                                            <span className="text-gray-800 font-medium text-lg">
+                                                {t(item.i18nKey)}
+                                            </span>
+                                        </Link>
+                                    ))}
+
+                                    {/* Favorites */}
+                                    {user && (
+                                        <Link
+                                            to="/favorite_product"
+                                            className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group relative"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors" style={{ backgroundColor: 'var(--color-main)', opacity: 0.1 }}>
+                                                <Heart className="h-6 w-6" style={{ color: 'var(--color-main)' }} />
+                                            </div>
+                                            <span className="text-gray-800 font-medium text-lg">
+                                                {t('favorites')}
+                                            </span>
+                                            {favCount > 0 && (
+                                                <span className="absolute right-4 bg-red-500 text-white text-sm rounded-full h-6 w-6 flex items-center justify-center font-bold">
+                                                    {favCount}
+                                                </span>
+                                            )}
+                                        </Link>
+                                    )}
+
+                                    {/* Logout in Sidebar for logged-in users */}
+                                    {isLoggedIn && (
+                                        <button
+                                            onClick={() => {
+                                                handleLogout();
+                                                setIsMobileMenuOpen(false);
+                                            }}
+                                            className="flex items-center space-x-4 p-3 rounded-xl hover:bg-red-50 transition-all duration-200 group w-full text-left"
+                                        >
+                                            <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors" style={{ backgroundColor: 'red', opacity: 0.1 }}>
+                                                <LogOut className="h-6 w-6 text-red-600" />
+                                            </div>
+                                            <span className="text-red-600 font-medium text-lg">
+                                                {t('logout')}
+                                            </span>
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Language Selector */}
+                                <div className="p-6 border-t border-gray-100">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="text-gray-700 font-medium">{t('language')}</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {languages.map((lang) => (
+                                            <button
+                                                key={lang.code}
+                                                onClick={() => {
+                                                    handleLanguageChange(lang.code);
+                                                    setIsMobileMenuOpen(false);
+                                                }}
+                                                className={`p-3 rounded-lg border transition-all duration-200 ${selectedLanguage === lang.code
+                                                    ? 'border-gray-300 bg-gray-100'
+                                                    : 'border-gray-200 hover:border-gray-300'
+                                                    }`}
+                                                style={selectedLanguage === lang.code ? { color: 'var(--color-main)', borderColor: 'var(--color-main)' } : {}}
+                                            >
+                                                <div className="flex items-center space-x-2 justify-center">
+                                                    <span className="text-lg">{lang.flag}</span>
+                                                    <span className="font-medium">{lang.name}</span>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Footer */}
+                            <div className="p-2 border-t border-gray-100 bg-gray-50">
+                                <div className="flex items-center justify-center space-x-3 text-gray-600">
+                                    <Link to="https://food2go.online/" target="_blank" className="flex items-center justify-center gap-2">
+                                        <h1 className="text-gray-600">{t("Poweredby")}</h1>
+                                        <img src={mainLogo} className="w-16 h-16" alt="Main Logo" />
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
         </>
     );
 };

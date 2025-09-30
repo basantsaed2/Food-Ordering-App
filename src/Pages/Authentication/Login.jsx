@@ -9,13 +9,15 @@ import { BiSolidFoodMenu } from 'react-icons/bi';
 import { TbPasswordUser } from 'react-icons/tb';
 import { useAuth } from '../../Context/Auth';
 import { InputOtp } from 'primereact/inputotp';
+import { useSelector } from 'react-redux';
 
 const LoginPage = () => {
     const navigate = useNavigate();
     const apiUrl = import.meta.env.VITE_API_BASE_URL;
     const auth = useAuth();
-
-      const customInput = ({ events, props }) => {
+    const mainData = useSelector(state => state.mainData?.data);
+    const selectedLanguage = useSelector(state => state.language?.selected || 'en');
+    const customInput = ({ events, props }) => {
         const { invalid, ...inputProps } = props;
         const inputClass = invalid ? 'border-red-500' : 'border-gray-300';
 
@@ -243,7 +245,7 @@ const LoginPage = () => {
                                     <div className="mb-6 flex justify-center">
                                         <MdFastfood className="w-24 h-24 text-white" />
                                     </div>
-                                    <h2 className="text-3xl font-bold mb-4">Food2Go</h2>
+                                    <h2 className="text-3xl font-bold mb-4">{`${selectedLanguage === "en" ? mainData?.name : mainData?.ar_name}`}</h2>
                                     <p className="text-red-100">Delicious meals delivered to your door</p>
                                 </div>
 
@@ -257,7 +259,7 @@ const LoginPage = () => {
                             <div className="w-full md:w-3/5 bg-white p-8 md:p-12 flex flex-col justify-center">
                                 <div className="text-center mb-8">
                                     <h1 className="text-3xl font-bold text-red-800 mb-2">Welcome Back</h1>
-                                    <p className="text-red-600">Sign in to continue to Food2Go</p>
+                                    <p className="text-red-600">Sign in to continue to {`${selectedLanguage === "en" ? mainData?.name : mainData?.ar_name}`}</p>
                                 </div>
 
                                 <form onSubmit={handleLogin} className="space-y-5">

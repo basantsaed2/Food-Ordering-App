@@ -26,8 +26,27 @@ const ProductDetails = ({ product, onClose, language }) => {
   const [isFavorite, setIsFavorite] = useState(product.favourite || false);
   const [displayProduct, setDisplayProduct] = useState(product);
   const user = useSelector(state => state.user?.data?.user);
-  const selectedAddressId = useSelector(state => state.orderType?.selectedAddressId);
-  const selectedBranchId = useSelector(state => state.orderType?.selectedBranchId);
+
+  const savedOrderType = localStorage.getItem('orderType');
+  const selectedAddressId =
+    useSelector((state) => state.orderType?.selectedAddressId) ||
+    localStorage.getItem('selectedAddressId');
+
+  const selectedBranchId =
+    useSelector((state) => state.orderType?.selectedBranchId) ||
+    localStorage.getItem('selectedBranchId');
+
+  let productDetailsUrl = `${apiUrl}/customer/home/product_item/${product.id}?locale=${language}`;
+
+  if (user) {
+    productDetailsUrl += `&user_id=${user.id}`;
+  }
+
+  if (savedOrderType === 'delivery' && selectedAddressId) {
+    productDetailsUrl += `&address_id=${selectedAddressId}`;
+  } else if (savedOrderType === 'take_away' && selectedBranchId) {
+    productDetailsUrl += `&branch_id=${selectedBranchId}`;
+  }
 
   // Fetch product details
   const {
@@ -35,7 +54,7 @@ const ProductDetails = ({ product, onClose, language }) => {
     loading: loadingProductDetails,
     data: productDetails,
   } = useGet({
-    url: `${apiUrl}/customer/home/product_item/${product.id}?locale=${language}${user ? `&user_id=${user.id}` : ''}`,
+    url: productDetailsUrl,
   });
 
   // Refetch when language changes
@@ -323,6 +342,8 @@ const ProductDetails = ({ product, onClose, language }) => {
   }
 
   const displayData = productDetails || product;
+
+  console.log('Display Data:', displayData);
   const availableExtras = getAvailableExtras();
   const taxSetting = displayData.taxes?.setting || 'excluded';
 
