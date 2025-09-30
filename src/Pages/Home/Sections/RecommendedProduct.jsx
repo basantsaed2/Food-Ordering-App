@@ -100,16 +100,14 @@ const RecommendedProduct = () => {
   if (loadingRecommendedProducts) {
     return (
       <div className="w-full py-16 text-center bg-gray-50">
-        <StaticSpinner />
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-mainColor mx-auto mb-4"></div>
       </div>
     );
   }
 
   if (!recommendedProductsData || recommendedProductsData.length === 0) {
     return (
-      <div className="w-full py-16 text-center bg-gray-50">
-        <p className="text-gray-500 text-lg">No recommended products available</p>
-      </div>
+     <></>
     );
   }
 

@@ -1,52 +1,39 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import '@splidejs/react-splide/css';
 import Banners from './Sections/Banners';
 import Categories from './Sections/Categories';
 import RecommendedProduct from './Sections/RecommendedProduct';
-import { useGet } from '../../Hooks/useGet';
-import StaticSpinner from '../../Components/Spinners/StaticSpinner';
-import { useSelector } from 'react-redux';
 import OffersProducts from './Sections/OffersProducts';
 
 const Home = () => {
-  // const apiUrl = import.meta.env.VITE_API_BASE_URL;
-  // const selectedLanguage = useSelector((state) => state.language?.selected ?? 'en');
-  // const [webProductsData, setWebProductsData] = useState(null);
+  const { t } = useTranslation();
+  const orderType = useSelector((state) => state.orderType?.orderType);
+  const selectedAddressId = useSelector((state) => state.orderType?.selectedAddressId);
+  const selectedBranchId = useSelector((state) => state.orderType?.selectedBranchId);
+  const addresses = useSelector((state) => state.addresses?.data || []);
+  const branches = useSelector((state) => state.branches?.data || []);
 
-  // const {
-  //   refetch: refetchWebProducts,
-  //   loading: loadingWebProducts,
-  //   data: dataWebProducts,
-  // } = useGet({
-  //   url: `${apiUrl}/customer/home/web_products?&locale=${selectedLanguage}`,
-  // });
+  const getSelectedLocationInfo = () => {
+    if (orderType === 'delivery' && selectedAddressId) {
+      const address = addresses.find(addr => addr.id === selectedAddressId);
+      return address ? `Delivery to: ${address.address}` : 'Delivery address selected';
+    } else if (orderType === 'take_away' && selectedBranchId) {
+      const branch = branches.find(br => br.id === selectedBranchId);
+      return branch ? `Pickup from: ${branch.name}` : 'Branch selected';
+    }
+    return null;
+  };
 
-  // // Refetch products when language changes
-  // useEffect(() => {
-  //   refetchWebProducts();
-  // }, [selectedLanguage, refetchWebProducts]);
-
-  // // Store the data in state
-  // useEffect(() => {
-  //   if (dataWebProducts && !loadingWebProducts) {
-  //     setWebProductsData(dataWebProducts);
-  //   }
-  // }, [dataWebProducts]);
-
-  // if (loadingWebProducts) {
-  //   return (
-  //     <div className="flex justify-center items-center py-12">
-  //       <StaticSpinner />
-  //     </div>
-  //   );
-  // }
+  const locationInfo = getSelectedLocationInfo();
 
   return (
-    <div className="flex flex-col items-center w-screen ">
+    <div className="flex flex-col items-center w-screen">
       <Banners />
-      <Categories/>
+      <Categories />
       <RecommendedProduct />
-      <OffersProducts/>
+      <OffersProducts />
     </div>
   );
 };

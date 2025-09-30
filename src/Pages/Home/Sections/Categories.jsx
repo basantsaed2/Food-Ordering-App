@@ -15,6 +15,11 @@ const Categories = () => {
   const autoScrollRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(true);
 
+  // Get current order type and location from Redux - AT THE TOP LEVEL
+  const orderType = useSelector((state) => state.orderType?.orderType);
+  const selectedAddressId = useSelector((state) => state.orderType?.selectedAddressId);
+  const selectedBranchId = useSelector((state) => state.orderType?.selectedBranchId);
+
   const {
     refetch: refetchCategories,
     loading: loadingCategories,
@@ -22,6 +27,22 @@ const Categories = () => {
   } = useGet({
     url: `${apiUrl}/customer/home/categories?&locale=${selectedLanguage}`,
   });
+
+  // Helper function to build query string for category links
+  // Now it uses the Redux values from the top level
+  const getCategoryQueryString = () => {
+    const searchParams = new URLSearchParams();
+    
+    if (orderType === 'delivery' && selectedAddressId) {
+      searchParams.set('order_type', 'delivery');
+      searchParams.set('address_id', selectedAddressId);
+    } else if (orderType === 'take_away' && selectedBranchId) {
+      searchParams.set('order_type', 'take_away');
+      searchParams.set('branch_id', selectedBranchId);
+    }
+    
+    return searchParams.toString();
+  };
 
   // Refetch products when language changes
   useEffect(() => {
@@ -34,7 +55,7 @@ const Categories = () => {
       setCategoriesData(dataCategories.categories);
       dispatch(setCategories(dataCategories?.categories || []));
     }
-  }, [dataCategories,dispatch]);
+  }, [dataCategories, dispatch, loadingCategories]);
 
   // Auto-scroll functionality
   useEffect(() => {
@@ -85,7 +106,7 @@ const Categories = () => {
   if (loadingCategories) {
     return (
       <div className="flex justify-center items-center py-12">
-        <StaticSpinner />
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-mainColor mx-auto mb-4"></div>
       </div>
     );
   }
@@ -112,18 +133,6 @@ const Categories = () => {
           {/* Navigation Controls - Only show if multiple categories */}
           {categoriesData.length > 1 && (
             <div className="flex items-center space-x-3">
-              {/* <button
-                onClick={toggleAutoScroll}
-                className="p-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors flex items-center justify-center"
-                aria-label={isPlaying ? 'Pause auto-scroll' : 'Play auto-scroll'}
-              >
-                {isPlaying ? (
-                  <Pause className="h-4 w-4 text-gray-700" />
-                ) : (
-                  <Play className="h-4 w-4 text-gray-700" />
-                )}
-              </button> */}
-
               <div className="flex space-x-2">
                 <button
                   onClick={scrollLeft}
@@ -151,39 +160,40 @@ const Categories = () => {
             className="flex overflow-x-auto scrollbar-hide space-x-4 pb-6 -mx-4 px-4"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {categoriesData.map((category) => (
-              <Link
-                key={category.id}
-                to={`/products/${category.id}`}
-                className="group flex-shrink-0 relative bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 w-40 h-48 flex flex-col"
-              >
-                <div className="relative w-full h-full overflow-hidden">
-                  <img
-                    src={category.image_link}
-                    alt={category.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    onError={(e) => {
-                      e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTQi IGZpbGw9IiM5YzlkYWEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIwLjM1ZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
-                      e.target.style.objectFit = 'contain';
-                    }}
-                  />
+            {categoriesData.map((category) => {
+              const queryString = getCategoryQueryString();
+              const to = queryString 
+                ? `/products/${category.id}?${queryString}`
+                : `/products/${category.id}`;
 
-                  <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
+              return (
+                <Link
+                  key={category.id}
+                  to={to}
+                  className="group flex-shrink-0 relative bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 w-40 h-48 flex flex-col"
+                >
+                  <div className="relative w-full h-full overflow-hidden">
+                    <img
+                      src={category.image_link}
+                      alt={category.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      onError={(e) => {
+                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5YzlkYWEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIwLjM1ZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+                        e.target.style.objectFit = 'contain';
+                      }}
+                    />
 
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <h3 className="text-white font-semibold text-sm text-center line-clamp-2">
-                      {category.name}
-                    </h3>
-                  </div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
 
-                  {/* <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
-                      <ChevronRight className="h-5 w-5 text-white" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <h3 className="text-white font-semibold text-sm text-center line-clamp-2">
+                        {category.name}
+                      </h3>
                     </div>
-                  </div> */}
-                </div>
-              </Link>
-            ))}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
 
           {/* Auto-scroll status indicator */}

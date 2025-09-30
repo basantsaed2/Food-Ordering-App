@@ -31,6 +31,7 @@ const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState(id ? parseInt(id) : null);
   const [selectedSubCategory, setSelectedSubCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isProductsLoading, setIsProductsLoading] = useState(false); // إضافة state منفصل للـ products
   const scrollContainerRef = useRef(null);
 
   // Extract query parameters DIRECTLY from URL
@@ -142,11 +143,24 @@ const Products = () => {
     }
   }, [selectedCategory, categoriesData, effectiveOrderType, effectiveAddressId, effectiveBranchId, navigate]);
 
-  // Update products data and apply search filter
+  // تحديث مهم: إدارة حالة loading للـ products
+  useEffect(() => {
+    if (loadingProducts) {
+      setIsProductsLoading(true);
+      // إعادة تعيين البيانات القديمة فور بدء التحميل
+      setProductsData([]);
+      setFilteredProducts([]);
+    } else {
+      setIsProductsLoading(false);
+    }
+  }, [loadingProducts]);
+
+  // تحديث بيانات الـ products
   useEffect(() => {
     if (dataProducts && !loadingProducts) {
       const prods = dataProducts.products || [];
       setProductsData(prods);
+      setFilteredProducts(prods); // تعيين filteredProducts فوراً
       dispatch(setTaxType(dataProducts.tax));
     }
   }, [dataProducts, loadingProducts, dispatch]);
@@ -173,12 +187,17 @@ const Products = () => {
     filterProducts(searchQuery, productsData, selectedSubCategory);
   }, [productsData, selectedSubCategory, searchQuery, filterProducts]);
 
-  // Refetch products when selected category changes
+  // إعادة جلب الـ products عند تغيير الـ category مع إعادة تعيين الحالة
   useEffect(() => {
     if (selectedCategory) {
-      refetchProducts();
+      // إعادة تعيين الحالة فور تغيير الـ category
+      setProductsData([]);
+      setFilteredProducts([]);
       setSelectedSubCategory(null);
-      setSearchQuery(''); // Reset search when category changes
+      setSearchQuery('');
+      
+      // جلب البيانات الجديدة
+      refetchProducts();
     }
   }, [selectedCategory, refetchProducts]);
 
@@ -198,6 +217,12 @@ const Products = () => {
   // Handle category click
   const handleCategoryClick = useCallback(
     (categoryId) => {
+      // إعادة تعيين الحالة فوراً
+      setProductsData([]);
+      setFilteredProducts([]);
+      setSelectedSubCategory(null);
+      setSearchQuery('');
+      
       setSelectedCategory(categoryId);
       const query = new URLSearchParams();
       if (effectiveOrderType === 'delivery' && effectiveAddressId) {
@@ -371,7 +396,7 @@ const Products = () => {
           </div>
         </div>
 
-        {loadingProducts ? (
+        {isProductsLoading ? (
           <div className="flex justify-center items-center py-12">
             <StaticSpinner />
           </div>
@@ -391,7 +416,7 @@ const Products = () => {
             <p className="text-gray-500 text-lg">
               {searchQuery
                 ? "No products match your search."
-                : selectedCategory
+                : selectedCategory && productsData.length === 0
                 ? "No products found in this category."
                 : "Please select a category to view products."
               }

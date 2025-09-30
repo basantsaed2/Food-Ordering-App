@@ -41,7 +41,7 @@ const OrderType = () => {
   } = useGet({
     url: `${apiUrl}/customer/address/addresses?locale=${selectedLanguage}`,
     required: !!user?.token,
-    autoFetch:false
+    autoFetch: false
   });
 
   const {
@@ -92,8 +92,8 @@ const OrderType = () => {
 
   // Fetch data on mount and language change
   useEffect(() => {
-    if (user?.token){
-    refetchAddress();
+    if (user?.token) {
+      refetchAddress();
     }
     refetchBranches();
     // refetchCategories();
@@ -158,7 +158,13 @@ const OrderType = () => {
       // const firstCategoryId = categories[0]?.id;
       const query = `address_id=${address.id}&order_type=delivery`;
       // navigate(firstCategoryId ? `/products/${firstCategoryId}?${query}` : `/products/${address.id}?${query}`, { replace: true });
-      navigate(`/products?${query}`, { replace: true });
+      // navigate(`/products?${query}`, { replace: true });
+
+      // Save to localStorage for persistence
+      localStorage.setItem('selectedAddressId', address.id);
+      localStorage.setItem('selectedBranchId', '');
+      localStorage.setItem('orderType', 'delivery');
+      navigate('/home', { replace: true });
     },
     [dispatch, navigate, auth, t]
   );
@@ -174,7 +180,13 @@ const OrderType = () => {
       // const firstCategoryId = categories[0]?.id;
       const query = `branch_id=${branch.id}&order_type=take_away`;
       // navigate(firstCategoryId ? `/products/${firstCategoryId}?${query}` : `/products/${branch.id}?${query}`, { replace: true });
-      navigate(`/products?${query}`, { replace: true });
+      // navigate(`/products?${query}`, { replace: true });
+
+      // Save to localStorage for persistence
+      localStorage.setItem('selectedBranchId', branch.id);
+      localStorage.setItem('selectedAddressId', '');
+      localStorage.setItem('orderType', 'take_away');
+      navigate('/home', { replace: true });
     },
     [dispatch, navigate, auth, t]
   );
@@ -220,7 +232,7 @@ const OrderType = () => {
   };
 
   // Skeleton Loading State
-  if (loadingAddress || loadingBranches ) {
+  if (loadingAddress || loadingBranches) {
     return (
       <div className="flex flex-col w-full gap-3 mb-5">
         <div className="flex flex-col w-full gap-5 p-4 lg:flex-row">
@@ -256,11 +268,10 @@ const OrderType = () => {
               typeObj.status === 1 ? (
                 <button
                   key={typeObj.id}
-                  className={`flex min-w-40 h-40 flex-col items-center justify-center gap-2 text-xl font-TextFontRegular px-4 py-2 rounded-lg cursor-pointer border-2 transition-all ease-in-out duration-300 ${
-                    selectedOrderType === typeObj.type
-                      ? 'text-mainColor border-mainColor bg-white'
-                      : 'text-mainColor bg-gray-100 border-gray-100 hover:bg-mainColor hover:text-white'
-                  }`}
+                  className={`flex min-w-40 h-40 flex-col items-center justify-center gap-2 text-xl font-TextFontRegular px-4 py-2 rounded-lg cursor-pointer border-2 transition-all ease-in-out duration-300 ${selectedOrderType === typeObj.type
+                    ? 'text-mainColor border-mainColor bg-white'
+                    : 'text-mainColor bg-gray-100 border-gray-100 hover:bg-mainColor hover:text-white'
+                    }`}
                   onClick={() => handleOrderTypeSelect(typeObj)}
                   role="button"
                   aria-label={t(normalizeOrderType(typeObj.type).toLowerCase())}

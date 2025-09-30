@@ -49,18 +49,14 @@ const Banners = () => {
   if (loadingBannerData) {
     return (
       <div className="flex flex-col items-center justify-center w-full max-w-full py-16">
-        <StaticSpinner />
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-mainColor mx-auto mb-4"></div>
       </div>
     );
   }
 
   if (!bannerData || bannerData.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center w-full max-w-full py-16">
-        <div className="w-full max-w-6xl mx-auto px-4 h-64 md:h-80 bg-gradient-to-r from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center">
-          <p className="text-gray-500 font-medium">No banners available</p>
-        </div>
-      </div>
+      <></>
     );
   }
 
