@@ -116,6 +116,7 @@ import OrderTraking from "./Pages/OrderTracking/OrderTracking";
 import Profile from "./Pages/Profile/Profile";
 import SignUpPage from "./Pages/Authentication/SignUp";
 import ProtectedLogin from "./ProtectedData/ProtectedLogin";
+import MyOrderTracking from "./Pages/OrderTracking/MyOrderTracking";
 
 export const router = createBrowserRouter([
   {
@@ -174,6 +175,7 @@ export const router = createBrowserRouter([
           { path: "add_address", element: <AddNewAddress /> },
           { path: "check_out", element: <CheckOut /> },
           { path: "order_traking/:orderId", element: <OrderTraking /> },
+          { path: "orders" , element: <MyOrderTracking /> },
         ],
       },
     ],

@@ -30,8 +30,8 @@ const Navbar = () => {
 
     // Calculate real cart count
     const cartCount = cart?.itemCount || 0;
-    // Calculate real favorites count
-    const favCount = 0;
+    // // Calculate real favorites count
+    // const favCount = 0;
 
     // Sync login state with user data
     useEffect(() => {
@@ -212,7 +212,7 @@ const Navbar = () => {
                 className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors group"
                 onClick={() => handleNavigation('/profile')}
             >
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-opacity-20 transition-colors" style={{ backgroundColor: 'var(--color-main)', opacity: 0.1 }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
                     <User className="h-4 w-4" style={{ color: 'var(--color-main)' }} />
                 </div>
                 <span className="font-medium">{t('myProfile')}</span>
@@ -223,7 +223,7 @@ const Navbar = () => {
                 className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors group"
                 onClick={() => handleNavigation('/orders')}
             >
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-opacity-20 transition-colors" style={{ backgroundColor: 'var(--color-main)', opacity: 0.1 }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
                     <Package className="h-4 w-4" style={{ color: 'var(--color-main)' }} />
                 </div>
                 <span className="font-medium">{t('myOrders')}</span>
@@ -234,8 +234,8 @@ const Navbar = () => {
                     onClick={handleLogout}
                     className="flex items-center space-x-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 transition-colors group"
                 >
-                    <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors">
-                        <LogOut className="h-4 w-4 text-red-600" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
+                        <LogOut className="h-4 w-4" style={{ color: 'var(--color-main)' }}/>
                     </div>
                     <span className="font-medium">{t('logout')}</span>
                 </button>
@@ -304,11 +304,11 @@ const Navbar = () => {
                                                 className="relative p-2 text-white hover:text-gray-200 transition-colors group"
                                             >
                                                 <Heart className="h-6 w-6 group-hover:scale-110 transition-transform" />
-                                                {favCount > 0 && (
+                                                {/* {favCount > 0 && (
                                                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
                                                         {favCount}
                                                     </span>
-                                                )}
+                                                )} */}
                                             </Link>
 
                                             {/* Cart */}
@@ -426,7 +426,7 @@ const Navbar = () => {
                         }`}>
                         <div className="flex flex-col h-full">
                             {/* Scrollable Content - Starts immediately without header */}
-                            <div className="flex-1 overflow-y-auto">
+                            <div className="flex-1 overflow-y-auto scrollPage">
                                 {/* Profile Section */}
                                 <div className="p-6 border-b border-gray-100">
                                     {isLoggedIn ? (
@@ -461,7 +461,7 @@ const Navbar = () => {
                                             className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
-                                            <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors" style={{ backgroundColor: 'var(--color-main)', opacity: 0.1 }}>
+                                            <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
                                                 <item.icon className="h-6 w-6" style={{ color: 'var(--color-main)' }} />
                                             </div>
                                             <span className="text-gray-800 font-medium text-lg">
@@ -471,47 +471,60 @@ const Navbar = () => {
                                     ))}
 
                                     {/* Favorites */}
-                                    {user && (
-                                        <Link
-                                            to="/favorite_product"
-                                            className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group relative"
-                                            onClick={() => setIsMobileMenuOpen(false)}
-                                        >
-                                            <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors" style={{ backgroundColor: 'var(--color-main)', opacity: 0.1 }}>
-                                                <Heart className="h-6 w-6" style={{ color: 'var(--color-main)' }} />
-                                            </div>
-                                            <span className="text-gray-800 font-medium text-lg">
-                                                {t('favorites')}
-                                            </span>
-                                            {favCount > 0 && (
-                                                <span className="absolute right-4 bg-red-500 text-white text-sm rounded-full h-6 w-6 flex items-center justify-center font-bold">
-                                                    {favCount}
+                                    {isLoggedIn && user && (
+                                        <>
+                                            <Link
+                                                to="/favorite_product"
+                                                className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group relative"
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                                <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
+                                                    <Heart className="h-6 w-6" style={{ color: 'var(--color-main)' }} />
+                                                </div>
+                                                <span className="text-gray-800 font-medium text-lg">
+                                                    {t('favorites')}
                                                 </span>
-                                            )}
-                                        </Link>
-                                    )}
+                                                {/* {favCount > 0 && (
+                                                    <span className="absolute right-4 bg-red-500 text-white text-sm rounded-full h-6 w-6 flex items-center justify-center font-bold">
+                                                        {favCount}
+                                                    </span>
+                                                )} */}
+                                            </Link>
 
-                                    {/* Logout in Sidebar for logged-in users */}
-                                    {isLoggedIn && (
-                                        <button
-                                            onClick={() => {
-                                                handleLogout();
-                                                setIsMobileMenuOpen(false);
-                                            }}
-                                            className="flex items-center space-x-4 p-3 rounded-xl hover:bg-red-50 transition-all duration-200 group w-full text-left"
-                                        >
-                                            <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors" style={{ backgroundColor: 'red', opacity: 0.1 }}>
-                                                <LogOut className="h-6 w-6 text-red-600" />
-                                            </div>
-                                            <span className="text-red-600 font-medium text-lg">
-                                                {t('logout')}
-                                            </span>
-                                        </button>
+                                             <Link
+                                                to="/orders"
+                                                className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group relative"
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                                <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
+                                                    <Package className="h-6 w-6" style={{ color: 'var(--color-main)' }} />
+                                                </div>
+                                                <span className="text-gray-800 font-medium text-lg">
+                                                    {t('Orders')}
+                                                </span>
+                                            </Link>
+
+                                            {/* Logout in Sidebar for logged-in users */}
+                                            <button
+                                                onClick={() => {
+                                                    handleLogout();
+                                                    setIsMobileMenuOpen(false);
+                                                }}
+                                                className="flex items-center space-x-4 p-3 rounded-xl hover:bg-red-50 transition-all duration-200 group w-full text-left"
+                                            >
+                                                <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
+                                                    <LogOut className="h-6 w-6 text-red-600" />
+                                                </div>
+                                                <span className="text-red-600 font-medium text-lg">
+                                                    {t('logout')}
+                                                </span>
+                                            </button>
+                                        </>
                                     )}
                                 </div>
 
                                 {/* Language Selector */}
-                                <div className="p-6 border-t border-gray-100">
+                                {/* <div className="p-6 border-t border-gray-100">
                                     <div className="flex items-center justify-between mb-4">
                                         <span className="text-gray-700 font-medium">{t('language')}</span>
                                     </div>
@@ -536,7 +549,7 @@ const Navbar = () => {
                                             </button>
                                         ))}
                                     </div>
-                                </div>
+                                </div> */}
                             </div>
 
                             {/* Footer */}

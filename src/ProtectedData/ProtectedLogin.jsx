@@ -17,7 +17,7 @@ const ProtectedLogin = () => {
               const favorites = location.pathname === '/favorite_product';
               const checkOut = location.pathname === '/check_out';
               const cart = location.pathname === '/cart';
-              // const ordersHistory = location.pathname === '/orders/history';
+              const orders = location.pathname === '/orders';
               const orderTraking = location.pathname === '/order_traking/:orderId';
 
               if (user && isAuth) {
@@ -25,7 +25,7 @@ const ProtectedLogin = () => {
                      return;
               }
 
-              if (!user && (profile || favorites || checkOut || cart || orderTraking)) {
+              if (!user && (profile || favorites || checkOut || cart || orderTraking || orders)) {
                      if (!isToastShown) {
                             auth.toastError('You must be logged in to continue');
                             setIsToastShown(true);
