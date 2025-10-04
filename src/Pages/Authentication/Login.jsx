@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { usePost } from '../../Hooks/usePost';
@@ -19,14 +20,14 @@ const LoginPage = () => {
     const selectedLanguage = useSelector(state => state.language?.selected || 'en');
     const customInput = ({ events, props }) => {
         const { invalid, ...inputProps } = props;
-        const inputClass = invalid ? 'border-red-500' : 'border-gray-300';
+        const inputClass = invalid ? 'border-secoundColor' : 'border-gray-300';
 
         return (
             <input
                 {...events}
                 {...inputProps}
                 key={props.id}
-                className={`w-full pl-4 pr-4 py-3 rounded-lg text-black border ${inputClass} focus:ring-2 focus:ring-red-200 focus:border-red-500 outline-none transition duration-200 text-center text-xl tracking-widest`}
+                className={`w-full pl-4 pr-4 py-3 rounded-lg text-black border ${inputClass} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200 text-center text-xl tracking-widest`}
                 type="text"
                 unstyled={props.unstyled ? 'true' : 'false'}
             />
@@ -236,17 +237,17 @@ const LoginPage = () => {
         switch (loginStep) {
             case 'login':
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-amber-100 p-4">
+                    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-thirdColor to-mainColor p-4">
                         <div className="relative max-w-6xl w-full flex rounded-3xl overflow-hidden shadow-2xl">
                             {/* Left side - Illustration */}
-                            <div className="hidden md:flex md:w-2/5 bg-red-500 flex-col justify-center items-center p-8 text-white relative overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-b from-red-500/20 to-red-700/30"></div>
+                            <div className="hidden md:flex md:w-2/5 bg-mainColor flex-col justify-center items-center p-8 text-white relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-b from-mainColor/20 to-secoundColor/30"></div>
                                 <div className="relative z-10 text-center">
                                     <div className="mb-6 flex justify-center">
                                         <MdFastfood className="w-24 h-24 text-white" />
                                     </div>
                                     <h2 className="text-3xl font-bold mb-4">{`${selectedLanguage === "en" ? mainData?.name : mainData?.ar_name}`}</h2>
-                                    <p className="text-red-100">Delicious meals delivered to your door</p>
+                                    <p className="text-white">Delicious meals delivered to your door</p>
                                 </div>
 
                                 {/* Decorative elements */}
@@ -258,8 +259,8 @@ const LoginPage = () => {
                             {/* Right side - Form */}
                             <div className="w-full md:w-3/5 bg-white p-8 md:p-12 flex flex-col justify-center">
                                 <div className="text-center mb-8">
-                                    <h1 className="text-3xl font-bold text-red-800 mb-2">Welcome Back</h1>
-                                    <p className="text-red-600">Sign in to continue to {`${selectedLanguage === "en" ? mainData?.name : mainData?.ar_name}`}</p>
+                                    <h1 className="text-3xl font-bold text-secoundColor mb-2">Welcome Back</h1>
+                                    <p className="text-secoundColor">Sign in to continue to {`${selectedLanguage === "en" ? mainData?.name : mainData?.ar_name}`}</p>
                                 </div>
 
                                 <form onSubmit={handleLogin} className="space-y-5">
@@ -274,10 +275,10 @@ const LoginPage = () => {
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 placeholder="Enter your email"
-                                                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.email ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-red-200 focus:border-red-500 outline-none transition duration-200`}
+                                                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.email ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
                                             />
                                         </div>
-                                        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+                                        {errors.email && <p className="mt-1 text-sm text-secoundColor">{errors.email}</p>}
                                     </div>
 
                                     <div>
@@ -291,17 +292,16 @@ const LoginPage = () => {
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 placeholder="Enter your password"
-                                                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-red-200 focus:border-red-500 outline-none transition duration-200`}
+                                                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.password ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
                                             />
                                         </div>
-                                        {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+                                        {errors.password && <p className="mt-1 text-sm text-secoundColor">{errors.password}</p>}
                                     </div>
 
                                     <div className="flex justify-between items-center">
-
                                         <button
                                             type="button"
-                                            className="text-sm text-red-600 hover:text-red-800 font-medium transition-colors"
+                                            className="text-sm text-secoundColor hover:text-mainColor font-medium transition-colors"
                                             onClick={() => setLoginStep('forgot')}
                                         >
                                             Forgot Password?
@@ -309,7 +309,7 @@ const LoginPage = () => {
                                     </div>
 
                                     {errors.general && (
-                                        <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+                                        <div className="p-3 bg-thirdColor text-secoundColor rounded-lg text-sm">
                                             {errors.general}
                                         </div>
                                     )}
@@ -322,7 +322,7 @@ const LoginPage = () => {
 
                                     <button
                                         type="submit"
-                                        className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center shadow-md hover:shadow-lg"
+                                        className="w-full bg-mainColor hover:bg-secoundColor text-white font-bold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center shadow-md hover:shadow-lg"
                                         disabled={loadingLogin}
                                     >
                                         {loadingLogin ? (
@@ -340,7 +340,7 @@ const LoginPage = () => {
                                 <div className="mt-8 text-center">
                                     <p className="text-sm text-gray-600">
                                         Don't have an account?{' '}
-                                        <Link to="/signup" className="text-red-600 hover:text-red-800 font-medium">
+                                        <Link to="/signup" className="text-secoundColor hover:text-mainColor font-medium">
                                             Sign Up
                                         </Link>
                                     </p>
@@ -352,21 +352,21 @@ const LoginPage = () => {
 
             case 'forgot':
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-amber-100 p-4">
+                    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-thirdColor to-mainColor p-4">
                         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
                             <button
                                 onClick={() => setLoginStep('login')}
-                                className="flex items-center text-red-600 hover:text-red-800 mb-6"
+                                className="flex items-center text-secoundColor hover:text-mainColor mb-6"
                             >
                                 <FaArrowLeft className="mr-2" /> Back to Login
                             </button>
 
                             <div className="text-center mb-8">
                                 <div className="flex justify-center mb-4">
-                                    <TbPasswordUser className="w-12 h-12 text-red-500" />
+                                    <TbPasswordUser className="w-12 h-12 text-mainColor" />
                                 </div>
-                                <h1 className="text-2xl font-bold text-red-800 mb-2">Reset Password</h1>
-                                <p className="text-red-600">Enter your {verificationMethod} to receive a verification code</p>
+                                <h1 className="text-2xl font-bold text-secoundColor mb-2">Reset Password</h1>
+                                <p className="text-secoundColor">Enter your {verificationMethod} to receive a verification code</p>
                             </div>
 
                             <form onSubmit={handleForgotPassword}>
@@ -382,10 +382,10 @@ const LoginPage = () => {
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 placeholder="Enter your email"
-                                                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.email ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-red-200 focus:border-red-500 outline-none transition duration-200`}
+                                                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.email ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
                                             />
                                         </div>
-                                        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+                                        {errors.email && <p className="mt-1 text-sm text-secoundColor">{errors.email}</p>}
                                     </div>
                                 ) : (
                                     <div className="mb-6">
@@ -399,15 +399,15 @@ const LoginPage = () => {
                                                 value={phone}
                                                 onChange={(e) => setPhone(e.target.value)}
                                                 placeholder="Enter your phone number"
-                                                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.phone ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-red-200 focus:border-red-500 outline-none transition duration-200`}
+                                                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.phone ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
                                             />
                                         </div>
-                                        {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+                                        {errors.phone && <p className="mt-1 text-sm text-secoundColor">{errors.phone}</p>}
                                     </div>
                                 )}
 
                                 {errors.general && (
-                                    <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+                                    <div className="mb-4 p-3 bg-thirdColor text-secoundColor rounded-lg text-sm">
                                         {errors.general}
                                     </div>
                                 )}
@@ -420,7 +420,7 @@ const LoginPage = () => {
 
                                 <button
                                     type="submit"
-                                    className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center shadow-md"
+                                    className="w-full bg-mainColor hover:bg-secoundColor text-white font-medium py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center shadow-md"
                                     disabled={loadingSendOtp}
                                 >
                                     {loadingSendOtp ? (
@@ -440,21 +440,21 @@ const LoginPage = () => {
 
             case 'otp':
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-amber-100 p-4">
+                    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-thirdColor to-mainColor p-4">
                         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
                             <button
                                 onClick={() => setLoginStep('forgot')}
-                                className="flex items-center text-red-600 hover:text-red-800 mb-6"
+                                className="flex items-center text-secoundColor hover:text-mainColor mb-6"
                             >
                                 <FaArrowLeft className="mr-2" /> Back
                             </button>
 
                             <div className="text-center mb-8">
                                 <div className="flex justify-center mb-4">
-                                    <MdEmail className="w-12 h-12 text-red-500" />
+                                    <MdEmail className="w-12 h-12 text-mainColor" />
                                 </div>
-                                <h1 className="text-2xl font-bold text-red-800 mb-2">Verification Code</h1>
-                                <p className="text-red-600">We've sent a 6-digit code to your {verificationMethod}</p>
+                                <h1 className="text-2xl font-bold text-secoundColor mb-2">Verification Code</h1>
+                                <p className="text-secoundColor">We've sent a 6-digit code to your {verificationMethod}</p>
                             </div>
 
                             <form onSubmit={handleVerifyOtp}>
@@ -470,11 +470,11 @@ const LoginPage = () => {
                                             inputTemplate={customInput}
                                         />
                                     </div>
-                                    {errors.otp && <p className="mt-1 text-sm text-red-600">{errors.otp}</p>}
+                                    {errors.otp && <p className="mt-1 text-sm text-secoundColor">{errors.otp}</p>}
                                 </div>
 
                                 {errors.general && (
-                                    <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+                                    <div className="mb-4 p-3 bg-thirdColor text-secoundColor rounded-lg text-sm">
                                         {errors.general}
                                     </div>
                                 )}
@@ -487,7 +487,7 @@ const LoginPage = () => {
 
                                 <button
                                     type="submit"
-                                    className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center shadow-md"
+                                    className="w-full bg-mainColor hover:bg-secoundColor text-white font-medium py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center shadow-md"
                                     disabled={loadingVerifyOtp}
                                 >
                                     {loadingVerifyOtp ? (
@@ -504,7 +504,7 @@ const LoginPage = () => {
                                 <div className="mt-6 text-center">
                                     <p className="text-sm text-gray-600">
                                         Didn't receive the code?{' '}
-                                        <button type="button" className="text-red-600 hover:text-red-800 font-medium">
+                                        <button type="button" className="text-secoundColor hover:text-mainColor font-medium">
                                             Resend
                                         </button>
                                     </p>
@@ -516,21 +516,21 @@ const LoginPage = () => {
 
             case 'newPassword':
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-amber-100 p-4">
+                    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-thirdColor to-mainColor p-4">
                         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
                             <button
                                 onClick={() => setLoginStep('otp')}
-                                className="flex items-center text-red-600 hover:text-red-800 mb-6"
+                                className="flex items-center text-secoundColor hover:text-mainColor mb-6"
                             >
                                 <FaArrowLeft className="mr-2" /> Back
                             </button>
 
                             <div className="text-center mb-8">
                                 <div className="flex justify-center mb-4">
-                                    <MdOutlinePassword className="w-12 h-12 text-red-500" />
+                                    <MdOutlinePassword className="w-12 h-12 text-mainColor" />
                                 </div>
-                                <h1 className="text-2xl font-bold text-red-800 mb-2">Set New Password</h1>
-                                <p className="text-red-600">Please enter your new password</p>
+                                <h1 className="text-2xl font-bold text-secoundColor mb-2">Set New Password</h1>
+                                <p className="text-secoundColor">Please enter your new password</p>
                             </div>
 
                             <form onSubmit={handleResetPassword}>
@@ -545,10 +545,10 @@ const LoginPage = () => {
                                             value={newPassword}
                                             onChange={(e) => setNewPassword(e.target.value)}
                                             placeholder="Enter new password"
-                                            className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.newPassword ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-red-200 focus:border-red-500 outline-none transition duration-200`}
+                                            className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.newPassword ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
                                         />
                                     </div>
-                                    {errors.newPassword && <p className="mt-1 text-sm text-red-600">{errors.newPassword}</p>}
+                                    {errors.newPassword && <p className="mt-1 text-sm text-secoundColor">{errors.newPassword}</p>}
                                 </div>
 
                                 <div className="mb-6">
@@ -562,14 +562,14 @@ const LoginPage = () => {
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
                                             placeholder="Confirm new password"
-                                            className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-red-200 focus:border-red-500 outline-none transition duration-200`}
+                                            className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.confirmPassword ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
                                         />
                                     </div>
-                                    {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>}
+                                    {errors.confirmPassword && <p className="mt-1 text-sm text-secoundColor">{errors.confirmPassword}</p>}
                                 </div>
 
                                 {errors.general && (
-                                    <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+                                    <div className="mb-4 p-3 bg-thirdColor text-secoundColor rounded-lg text-sm">
                                         {errors.general}
                                     </div>
                                 )}
@@ -582,7 +582,7 @@ const LoginPage = () => {
 
                                 <button
                                     type="submit"
-                                    className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center shadow-md"
+                                    className="w-full bg-mainColor hover:bg-secoundColor text-white font-medium py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center shadow-md"
                                     disabled={loadingResetPassword}
                                 >
                                     {loadingResetPassword ? (
