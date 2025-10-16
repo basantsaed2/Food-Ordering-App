@@ -30,10 +30,42 @@ const CheckOut = () => {
     const taxSysType = useSelector(state => state.taxType?.data || 'included');
     const auth = useAuth();
 
-    // Get IDs from orderType slice
-    const orderType = useSelector(state => state.orderType?.orderType);
-    const selectedAddressId = useSelector(state => state.orderType?.selectedAddressId);
-    const selectedBranchId = useSelector(state => state.orderType?.selectedBranchId);
+    // Get IDs from orderType slice with localStorage fallback
+    const getOrderTypeFromStorage = () => {
+        // First try Redux state
+        const reduxOrderType = useSelector(state => state.orderType?.orderType);
+        if (reduxOrderType) return reduxOrderType;
+
+        // Fallback to localStorage
+        const storedOrderType = localStorage.getItem('orderType');
+        return storedOrderType || 'delivery'; // default to delivery if nothing found
+    };
+
+    const getAddressIdFromStorage = () => {
+        // First try Redux state
+        const reduxAddressId = useSelector(state => state.orderType?.selectedAddressId);
+        if (reduxAddressId) return reduxAddressId;
+
+        // Fallback to localStorage
+        const storedAddressId = localStorage.getItem('selectedAddressId');
+        // Convert to number if it exists, otherwise return null
+        return storedAddressId ? parseInt(storedAddressId) : null;
+    };
+
+    const getBranchIdFromStorage = () => {
+        // First try Redux state
+        const reduxBranchId = useSelector(state => state.orderType?.selectedBranchId);
+        if (reduxBranchId) return reduxBranchId;
+
+        // Fallback to localStorage
+        const storedBranchId = localStorage.getItem('selectedBranchId');
+        // Convert to number if it exists, otherwise return null
+        return storedBranchId ? parseInt(storedBranchId) : null;
+    };
+
+    const orderType = getOrderTypeFromStorage();
+    const selectedAddressId = getAddressIdFromStorage();
+    const selectedBranchId = getBranchIdFromStorage();
 
     // Fetch addresses and branches to get full objects
     const { data: addressesData } = useGet({
@@ -143,7 +175,7 @@ const CheckOut = () => {
                 priceAfterDiscount: cart.priceAfterDiscount,
                 tax: cart.totalTax,
                 delivery: deliveryPrice,
-                total: cart.total 
+                total: cart.total
             });
         }
     }, [cart, orderType, selectedAddress]);
@@ -590,8 +622,8 @@ const CheckOut = () => {
 
                                 {orderSummary.priceAfterDiscount > 0 && (
                                     <div className="flex justify-between text-blue-600">
-                                        <span>{t('priceAfterDiscount')}</span>
-                                        <span>-{orderSummary.priceAfterDiscount.toFixed(2)} EGP</span>
+                                        <span>{t('price After Discount')}</span>
+                                        <span>{orderSummary.priceAfterDiscount.toFixed(2)} EGP</span>
                                     </div>
                                 )}
 
@@ -626,14 +658,6 @@ const CheckOut = () => {
 
                             </div>
 
-                            {/* Security Badge */}
-                            <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg mb-6">
-                                <Shield className="h-5 w-5 text-green-600" />
-                                <span className="text-sm text-green-700">
-                                    {t('secureCheckout')}
-                                </span>
-                            </div>
-
                             {/* Checkout Button */}
                             <button
                                 onClick={handleSendOrder}
@@ -660,12 +684,6 @@ const CheckOut = () => {
                                 )}
                             </button>
 
-                            {/* Guarantee */}
-                            <div className="mt-4 text-center">
-                                <p className="text-xs text-gray-500">
-                                    {t('satisfactionGuarantee')}
-                                </p>
-                            </div>
                         </div>
                     </div>
                 </div>
