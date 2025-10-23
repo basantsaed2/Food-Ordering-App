@@ -9,6 +9,7 @@ import { setTaxType } from '../../Store/Slices/taxTypeSlice';
 import { useAuth } from '../../Context/Auth';
 import { setSelectedBranch, setSelectedAddress, setOrderType } from '../../Store/Slices/orderTypeSlice';
 import debounce from 'lodash/debounce';
+import { useTranslation } from 'react-i18next';
 
 const Products = () => {
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -17,7 +18,9 @@ const Products = () => {
   const dispatch = useDispatch();
   const location = useLocation();
   const auth = useAuth();
+  const { t } = useTranslation();
   const selectedLanguage = useSelector((state) => state.language?.selected ?? 'en');
+  const isRTL = selectedLanguage === 'ar';
   const user = useSelector(state => state.user?.data?.user);
 
   // Read from Redux state
@@ -31,7 +34,7 @@ const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState(id ? parseInt(id) : null);
   const [selectedSubCategory, setSelectedSubCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isProductsLoading, setIsProductsLoading] = useState(false); // إضافة state منفصل للـ products
+  const [isProductsLoading, setIsProductsLoading] = useState(false);
   const scrollContainerRef = useRef(null);
 
   // Extract query parameters DIRECTLY from URL
@@ -143,11 +146,10 @@ const Products = () => {
     }
   }, [selectedCategory, categoriesData, effectiveOrderType, effectiveAddressId, effectiveBranchId, navigate]);
 
-  // تحديث مهم: إدارة حالة loading للـ products
+  // Manage products loading state
   useEffect(() => {
     if (loadingProducts) {
       setIsProductsLoading(true);
-      // إعادة تعيين البيانات القديمة فور بدء التحميل
       setProductsData([]);
       setFilteredProducts([]);
     } else {
@@ -155,12 +157,12 @@ const Products = () => {
     }
   }, [loadingProducts]);
 
-  // تحديث بيانات الـ products
+  // Update products data
   useEffect(() => {
     if (dataProducts && !loadingProducts) {
       const prods = dataProducts.products || [];
       setProductsData(prods);
-      setFilteredProducts(prods); // تعيين filteredProducts فوراً
+      setFilteredProducts(prods);
       dispatch(setTaxType(dataProducts.tax));
     }
   }, [dataProducts, loadingProducts, dispatch]);
@@ -187,37 +189,36 @@ const Products = () => {
     filterProducts(searchQuery, productsData, selectedSubCategory);
   }, [productsData, selectedSubCategory, searchQuery, filterProducts]);
 
-  // إعادة جلب الـ products عند تغيير الـ category مع إعادة تعيين الحالة
+  // Refetch products when category changes
   useEffect(() => {
     if (selectedCategory) {
-      // إعادة تعيين الحالة فور تغيير الـ category
       setProductsData([]);
       setFilteredProducts([]);
       setSelectedSubCategory(null);
       setSearchQuery('');
       
-      // جلب البيانات الجديدة
       refetchProducts();
     }
   }, [selectedCategory, refetchProducts]);
 
-  // Scroll functions for categories
+  // RTL-aware scroll functions for categories
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+      const scrollAmount = isRTL ? 300 : -300;
+      scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
 
   const scrollRight = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+      const scrollAmount = isRTL ? -300 : 300;
+      scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
 
   // Handle category click
   const handleCategoryClick = useCallback(
     (categoryId) => {
-      // إعادة تعيين الحالة فوراً
       setProductsData([]);
       setFilteredProducts([]);
       setSelectedSubCategory(null);
@@ -266,25 +267,32 @@ const Products = () => {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gray-50">
+    <div 
+      className="w-full min-h-screen bg-gray-50"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       {/* Categories Navigation */}
       <div className="sticky top-0 z-10 bg-white shadow-md py-4 px-4">
         <div className="max-w-7xl mx-auto relative">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-mainColor">Categories</h2>
+          <div className={`flex items-center justify-between mb-4`}>
+            <h2 className={`text-xl font-bold text-mainColor ${isRTL ? 'text-right' : 'text-left'}`}>
+              {t('categories')}
+            </h2>
             {categoriesData.length > 1 && (
-              <div className="flex space-x-2">
+              <div className={`flex ${isRTL ? 'space-x-reverse' : 'space-x-2'} space-x-2`}>
                 <button
                   onClick={scrollLeft}
                   className="p-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
+                  aria-label={isRTL ? t('scrollRight') : t('scrollLeft')}
                 >
-                  <ChevronLeft className="h-5 w-5 text-gray-700" />
+                  <ChevronLeft className={`h-5 w-5 text-gray-700 transform ${isRTL ? 'rotate-180' : ''}`} />
                 </button>
                 <button
                   onClick={scrollRight}
                   className="p-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
+                  aria-label={isRTL ? t('scrollLeft') : t('scrollRight')}
                 >
-                  <ChevronRight className="h-5 w-5 text-gray-700" />
+                  <ChevronRight className={`h-5 w-5 text-gray-700 transform ${isRTL ? 'rotate-180' : ''}`} />
                 </button>
               </div>
             )}
@@ -293,26 +301,33 @@ const Products = () => {
           {categoriesData.length > 0 ? (
             <div
               ref={scrollContainerRef}
-              className="flex overflow-x-auto scrollbar-hide space-x-3 pb-2"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              className="flex overflow-x-auto scrollbar-hide pb-2"
+              style={{ 
+                scrollbarWidth: 'none', 
+                msOverflowStyle: 'none',
+                [isRTL ? 'paddingRight' : 'paddingLeft']: '0',
+                [isRTL ? 'paddingLeft' : 'paddingRight']: '0'
+              }}
             >
-              {categoriesData.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategoryClick(category.id)}
-                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    selectedCategory === category.id
-                      ? 'bg-mainColor text-white'
-                      : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                  }`}
-                >
-                  {category.name}
-                </button>
-              ))}
+              <div className={`flex ${isRTL ? 'space-x-reverse' : 'space-x-3'} space-x-3`}>
+                {categoriesData.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategoryClick(category.id)}
+                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                      selectedCategory === category.id
+                        ? 'bg-mainColor text-white'
+                        : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                    }`}
+                  >
+                    {category.name}
+                  </button>
+                ))}
+              </div>
             </div>
           ) : (
             <div className="text-center py-4">
-              <p className="text-gray-500">No categories available</p>
+              <p className="text-gray-500">{t('noCategoriesAvailable')}</p>
             </div>
           )}
         </div>
@@ -321,15 +336,15 @@ const Products = () => {
       {/* Location Warning Banner */}
       {(!effectiveAddressId && !effectiveBranchId) && (
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
-          <div className="flex">
+          <div className={`flex ${isRTL ? 'flex-row-reverse' : ''}`}>
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
             </div>
-            <div className="ml-3">
-              <p className="text-sm text-yellow-700">
-                <strong>Note:</strong> Showing all products. For location-specific availability and pricing, please select a delivery address or branch.
+            <div className={isRTL ? 'mr-3' : 'ml-3'}>
+              <p className={`text-sm text-yellow-700 ${isRTL ? 'text-right' : 'text-left'}`}>
+                <strong>{t('note')}:</strong> {t('locationWarningMessage')}
               </p>
             </div>
           </div>
@@ -340,31 +355,35 @@ const Products = () => {
       {subCategories.length > 0 && (
         <div className="bg-white py-3 px-4 border-b">
           <div className="max-w-7xl mx-auto">
-            <h3 className="text-md font-semibold text-gray-700 mb-2">Subcategories</h3>
-            <div className="flex overflow-x-auto scrollbar-hide space-x-2">
-              <button
-                onClick={() => setSelectedSubCategory(null)}
-                className={`flex-shrink-0 px-3 py-1 rounded-full text-xs transition-colors ${
-                  selectedSubCategory === null
-                    ? 'bg-mainColor text-white'
-                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                }`}
-              >
-                All
-              </button>
-              {subCategories.map((subCategory) => (
+            <h3 className={`text-md font-semibold text-gray-700 mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+              {t('subcategories')}
+            </h3>
+            <div className="flex overflow-x-auto scrollbar-hide">
+              <div className={`flex ${isRTL ? 'space-x-reverse' : 'space-x-2'} space-x-2`}>
                 <button
-                  key={subCategory.id}
-                  onClick={() => handleSubCategoryClick(subCategory.id)}
+                  onClick={() => setSelectedSubCategory(null)}
                   className={`flex-shrink-0 px-3 py-1 rounded-full text-xs transition-colors ${
-                    selectedSubCategory === subCategory.id
+                    selectedSubCategory === null
                       ? 'bg-mainColor text-white'
                       : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                   }`}
                 >
-                  {subCategory.name}
+                  {t('all')}
                 </button>
-              ))}
+                {subCategories.map((subCategory) => (
+                  <button
+                    key={subCategory.id}
+                    onClick={() => handleSubCategoryClick(subCategory.id)}
+                    className={`flex-shrink-0 px-3 py-1 rounded-full text-xs transition-colors ${
+                      selectedSubCategory === subCategory.id
+                        ? 'bg-mainColor text-white'
+                        : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                    }`}
+                  >
+                    {subCategory.name}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -373,21 +392,27 @@ const Products = () => {
       {/* Products Grid */}
       <div className="max-w-7xl mx-auto p-4">
         {/* Search Input */}
-        <div className="relative mb-6">
+        <div className={`relative mb-6 ${isRTL ? 'text-right' : 'text-left'}`}>
           <div className="w-full md:w-3/6 xl:w-2/6">
             <div className="relative flex-grow">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={handleSearchChange}
-                placeholder="Search products..."
-                className="w-full py-2.5 pl-10 pr-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-mainColor focus:border-mainColor transition-all duration-300 bg-white shadow-sm placeholder-gray-400 text-gray-800"
+                placeholder={t('searchProductsPlaceholder')}
+                className={`w-full py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-mainColor focus:border-mainColor transition-all duration-300 bg-white shadow-sm placeholder-gray-400 text-gray-800 ${
+                  isRTL ? 'pr-10 pl-10' : 'pl-10 pr-10'
+                }`}
               />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Search className={`absolute top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 ${
+                isRTL ? 'right-3' : 'left-3'
+              }`} />
               {searchQuery && (
                 <button
                   onClick={handleClearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  className={`absolute top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 transition-colors ${
+                    isRTL ? 'left-3' : 'right-3'
+                  }`}
                 >
                   <X className="h-5 w-5 text-gray-400" />
                 </button>
@@ -412,18 +437,18 @@ const Products = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
+          <div className={`text-center py-12 ${isRTL ? 'text-right' : 'text-left'}`}>
             <p className="text-gray-500 text-lg">
               {searchQuery
-                ? "No products match your search."
+                ? t('noProductsMatchSearch')
                 : selectedCategory && productsData.length === 0
-                ? "No products found in this category."
-                : "Please select a category to view products."
+                ? t('noProductsInCategory')
+                : t('selectCategoryToViewProducts')
               }
             </p>
             {selectedCategory && (!effectiveAddressId && !effectiveBranchId) && (
               <p className="text-gray-400 text-sm mt-2">
-                Products may be available when you select a specific location.
+                {t('productsAvailableWithLocation')}
               </p>
             )}
           </div>

@@ -406,17 +406,17 @@ const ProductDetails = ({ product, onClose, language }) => {
               <div className="flex items-center gap-2">
                 {displayData.discount_val > 0 && (
                   <span className="text-red-500 line-through">
-                    {displayData.price} EGP
+                    {displayData.price} {t('egp')}
                   </span>
                 )}
                 <span className="text-mainColor font-bold text-lg">
-                  {displayData.price_after_discount || displayData.price} EGP
+                  {displayData.price_after_discount || displayData.price} {t('egp')}
                 </span>
               </div>
             </div>
             {taxSetting === 'included' && displayData.tax_val > 0 && (
               <div className="text-sm text-gray-600 mt-1">
-                {t('taxIncluded')}: {displayData.tax_val} EGP
+                {t('taxIncluded')}: {displayData.tax_val} {t('egp')}
               </div>
             )}
           </div>
@@ -453,7 +453,7 @@ const ProductDetails = ({ product, onClose, language }) => {
                     </div>
                     {option.price > 0 && (
                       <span className="text-mainColor font-semibold">
-                        +{option.price} EGP
+                        +{option.price} {t('egp')}
                       </span>
                     )}
                   </label>
@@ -482,7 +482,7 @@ const ProductDetails = ({ product, onClose, language }) => {
                           <span>{addon.name}</span>
                         </div>
                         <span className="text-mainColor font-semibold">
-                          +{addon.price} EGP
+                          +{addon.price} {t('egp')}
                         </span>
                       </label>
                       {currentAddon?.checked && (
@@ -538,11 +538,11 @@ const ProductDetails = ({ product, onClose, language }) => {
                         <div className="flex items-center gap-2">
                           {hasDiscount && (
                             <span className="text-red-500 text-sm line-through">
-                              {extra.price} EGP
+                              {extra.price} {t('egp')}
                             </span>
                           )}
                           <span className="text-mainColor font-semibold">
-                            +{extra.price_after_discount || extra.price} EGP
+                            +{extra.price_after_discount || extra.price} {t('egp')}
                           </span>
                         </div>
                       </div>
@@ -637,7 +637,7 @@ const ProductDetails = ({ product, onClose, language }) => {
           <div className="flex justify-between items-center mb-6 p-4 bg-mainColor/10 rounded-lg">
             <span className="text-lg font-semibold">{t('totalPrice')}</span>
             <span className="text-2xl font-bold text-mainColor">
-              {calculateTotalPrice().toFixed(2)} EGP
+              {calculateTotalPrice().toFixed(2)} {t('egp')}
             </span>
           </div>
           {/* Add to Cart Button */}

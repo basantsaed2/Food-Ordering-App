@@ -30,8 +30,9 @@ const Navbar = () => {
 
     // Calculate real cart count
     const cartCount = cart?.itemCount || 0;
-    // // Calculate real favorites count
-    // const favCount = 0;
+
+    // Check if current language is RTL
+    const isRTL = selectedLanguage === 'ar';
 
     // Sync login state with user data
     useEffect(() => {
@@ -63,8 +64,10 @@ const Navbar = () => {
     useEffect(() => {
         if (selectedLanguage) {
             i18n.changeLanguage(selectedLanguage);
+            // Update document direction
+            document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
         }
-    }, [selectedLanguage, i18n]);
+    }, [selectedLanguage, i18n, isRTL]);
 
     // Find current language object from languages array
     const currentLanguageObj = languages.find(lang => lang.code === selectedLanguage) || {};
@@ -108,7 +111,6 @@ const Navbar = () => {
 
     const handleLogout = () => {
         auth.logout();
-        // Add your logout logic here
         navigate('/');
         setIsMobileMenuOpen(false);
         setIsProfileDropdownOpen(false);
@@ -116,20 +118,18 @@ const Navbar = () => {
 
     const toggleProfileDropdown = () => {
         setIsProfileDropdownOpen(!isProfileDropdownOpen);
-        // Close language dropdown when opening profile dropdown
         if (isLanguageDropdownOpen) setIsLanguageDropdownOpen(false);
     };
 
     const toggleLanguageDropdown = () => {
         setIsLanguageDropdownOpen(!isLanguageDropdownOpen);
-        // Close profile dropdown when opening language dropdown
         if (isProfileDropdownOpen) setIsProfileDropdownOpen(false);
     };
 
     // Function to render logo with name
     const renderLogo = () => {
         return (
-            <div className="flex items-center space-x-3">
+            <div className={`flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-3'} space-x-3`}>
                 <div className="bg-white rounded-full shadow-md flex items-center justify-center">
                     {mainData?.logo_link ? (
                         <img
@@ -190,54 +190,55 @@ const Navbar = () => {
         );
     };
 
-    // Enhanced dropdown component
+    // Enhanced dropdown component with RTL support
     const ProfileDropdown = () => (
         <div
             ref={profileDropdownRef}
-            className={`absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-60 transition-all duration-200 ${isProfileDropdownOpen ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform -translate-y-2 pointer-events-none'
+            className={`absolute top-full ${isRTL ? 'left-0' : 'right-0'} mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-60 transition-all duration-200 ${isProfileDropdownOpen ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform -translate-y-2 pointer-events-none'
                 }`}
+            style={{ direction: isRTL ? 'rtl' : 'ltr' }}
         >
             {/* User info header */}
             <div className="px-4 py-3 border-b border-gray-100">
-                <p className="font-semibold text-gray-900 truncate">
+                <p className="font-semibold text-gray-900 truncate text-right">
                     {user?.name || t('user')}
                 </p>
-                <p className="text-sm text-gray-500 truncate">
+                <p className="text-sm text-gray-500 truncate text-right">
                     {user?.email || 'user@example.com'}
                 </p>
             </div>
 
             <Link
                 to="/profile"
-                className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors group"
+                className={`flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-3'} space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors group`}
                 onClick={() => handleNavigation('/profile')}
             >
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
                     <User className="h-4 w-4" style={{ color: 'var(--color-main)' }} />
                 </div>
-                <span className="font-medium">{t('myProfile')}</span>
+                <span className="font-medium flex-1 text-right">{t('myProfile')}</span>
             </Link>
 
             <Link
                 to="/orders"
-                className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors group"
+                className={`flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-3'} space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors group`}
                 onClick={() => handleNavigation('/orders')}
             >
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
                     <Package className="h-4 w-4" style={{ color: 'var(--color-main)' }} />
                 </div>
-                <span className="font-medium">{t('myOrders')}</span>
+                <span className="font-medium flex-1 text-right">{t('myOrders')}</span>
             </Link>
 
             <div className="border-t border-gray-100 mt-2 pt-2">
                 <button
                     onClick={handleLogout}
-                    className="flex items-center space-x-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 transition-colors group"
+                    className={`flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-3'} space-x-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 transition-colors group`}
                 >
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
                         <LogOut className="h-4 w-4" style={{ color: 'var(--color-main)' }}/>
                     </div>
-                    <span className="font-medium">{t('logout')}</span>
+                    <span className="font-medium flex-1 text-right">{t('logout')}</span>
                 </button>
             </div>
         </div>
@@ -246,21 +247,22 @@ const Navbar = () => {
     const LanguageDropdown = () => (
         <div
             ref={languageDropdownRef}
-            className={`absolute top-full left-0 mt-2 w-32 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-60 transition-all duration-200 ${isLanguageDropdownOpen ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform -translate-y-2 pointer-events-none'
+            className={`absolute top-full ${isRTL ? 'right-0' : 'left-0'} mt-2 w-32 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-60 transition-all duration-200 ${isLanguageDropdownOpen ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform -translate-y-2 pointer-events-none'
                 }`}
+            style={{ direction: isRTL ? 'rtl' : 'ltr' }}
         >
             {languages.map((lang) => (
                 <button
                     key={lang.code}
                     onClick={() => handleLanguageChange(lang.name)}
-                    className={`flex items-center space-x-3 w-full px-3 py-2 text-left transition-colors ${selectedLanguage === lang.name
+                    className={`flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-3'} space-x-3 w-full px-3 py-2 transition-colors ${selectedLanguage === lang.name
                         ? 'bg-gray-100'
                         : 'text-gray-700 hover:bg-gray-50'
                         }`}
                     style={selectedLanguage === lang.name ? { color: 'var(--color-main)' } : {}}
                 >
                     <span className="text-lg">{lang.flag || '🌐'}</span>
-                    <span className="flex-1 font-medium">{lang.name}</span>
+                    <span className="flex-1 font-medium text-right">{lang.name}</span>
                 </button>
             ))}
         </div>
@@ -271,7 +273,11 @@ const Navbar = () => {
             {pages.some(page => location.pathname === page) ? (
                 ''
             ) : (
-                <nav className="shadow-lg relative z-40" style={{ backgroundColor: 'var(--color-main)' }}>
+                <nav 
+                    className="shadow-lg relative z-40" 
+                    style={{ backgroundColor: 'var(--color-main)' }}
+                    dir={isRTL ? 'rtl' : 'ltr'}
+                >
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between items-center h-16 lg:h-20">
                             {/* Logo with Name */}
@@ -285,53 +291,46 @@ const Navbar = () => {
                                     <Link
                                         key={index}
                                         to={item.path}
-                                        className="text-white hover:text-gray-200 transition-all duration-200 font-medium flex items-center space-x-2 group relative"
+                                        className={`text-white hover:text-gray-200 transition-all duration-200 font-medium flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-2'} space-x-2 group relative`}
                                     >
                                         <item.icon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                                        <span>{t(item.i18nKey)}</span>
+                                        <span className={isRTL ? 'mr-1' : 'ml-1'}>{t(item.i18nKey)}</span>
                                     </Link>
                                 ))}
                             </div>
 
                             {/* Desktop Right Side Icons */}
-                            <div className="hidden xl:flex xl:items-center lg:space-x-6">
+                            <div className={`hidden xl:flex xl:items-center ${isRTL ? 'space-x-reverse' : 'space-x-6'} space-x-6`}>
                                 {/* Favorites */}
-                                {
-                                    user && (
-                                        <>
-                                            <Link
-                                                to="/favorite_product"
-                                                className="relative p-2 text-white hover:text-gray-200 transition-colors group"
-                                            >
-                                                <Heart className="h-6 w-6 group-hover:scale-110 transition-transform" />
-                                                {/* {favCount > 0 && (
-                                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                                                        {favCount}
-                                                    </span>
-                                                )} */}
-                                            </Link>
+                                {user && (
+                                    <>
+                                        <Link
+                                            to="/favorite_product"
+                                            className="relative p-2 text-white hover:text-gray-200 transition-colors group"
+                                        >
+                                            <Heart className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                                        </Link>
 
-                                            {/* Cart */}
-                                            <Link
-                                                to="/cart"
-                                                className="relative p-2 text-white hover:text-gray-200 transition-colors group"
-                                            >
-                                                <ShoppingCart className="h-6 w-6 group-hover:scale-110 transition-transform" />
-                                                {cartCount > 0 && (
-                                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                                                        {cartCount}
-                                                    </span>
-                                                )}
-                                            </Link>
-                                        </>
-                                    )
-                                }
+                                        {/* Cart */}
+                                        <Link
+                                            to="/cart"
+                                            className="relative p-2 text-white hover:text-gray-200 transition-colors group"
+                                        >
+                                            <ShoppingCart className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                                            {cartCount > 0 && (
+                                                <span className={`absolute -top-1 ${isRTL ? '-left-1' : '-right-1'} bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold`}>
+                                                    {cartCount}
+                                                </span>
+                                            )}
+                                        </Link>
+                                    </>
+                                )}
 
                                 {/* Language Toggle - Desktop */}
                                 <div className="relative" ref={languageDropdownRef}>
                                     <button
                                         onClick={toggleLanguageDropdown}
-                                        className="text-white hover:text-gray-200 transition-colors flex items-center space-x-2 bg-white bg-opacity-20 rounded-full px-4 py-2 group"
+                                        className={`text-white hover:text-gray-200 transition-colors flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-2'} space-x-2 bg-white bg-opacity-20 rounded-full px-4 py-2 group`}
                                     >
                                         <Globe className="h-4 w-4" />
                                         <span className="font-medium">{currentLanguageName}</span>
@@ -344,7 +343,7 @@ const Navbar = () => {
                                     <div className="relative" ref={profileDropdownRef}>
                                         <button
                                             onClick={toggleProfileDropdown}
-                                            className="flex items-center space-x-3 text-white hover:text-gray-200 transition-colors group p-1 rounded-lg"
+                                            className={`flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-3'} space-x-3 text-white hover:text-gray-200 transition-colors group p-1 rounded-lg`}
                                         >
                                             {renderUserProfile()}
                                             <span className="font-medium hidden lg:block">
@@ -370,13 +369,13 @@ const Navbar = () => {
                             </div>
 
                             {/* Mobile Menu Button Area */}
-                            <div className="xl:hidden flex items-center space-x-4">
+                            <div className={`xl:hidden flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-4'} space-x-4`}>
                                 {/* Cart Icon */}
                                 {user && (
                                     <Link to="/cart" className="text-white relative p-2">
                                         <ShoppingCart className="h-5 w-5" />
                                         {cartCount > 0 && (
-                                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">
+                                            <span className={`absolute -top-1 ${isRTL ? '-left-1' : '-right-1'} bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold`}>
                                                 {cartCount}
                                             </span>
                                         )}
@@ -386,7 +385,7 @@ const Navbar = () => {
                                 <div className="relative" ref={languageDropdownRef}>
                                     <button
                                         onClick={toggleLanguageDropdown}
-                                        className="text-white hover:text-gray-200 transition-colors flex items-center space-x-2 bg-white bg-opacity-20 rounded-full px-4 py-2 group"
+                                        className={`text-white hover:text-gray-200 transition-colors flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-2'} space-x-2 bg-white bg-opacity-20 rounded-full px-4 py-2 group`}
                                     >
                                         <Globe className="h-4 w-4" />
                                         <span className="font-medium">{currentLanguageName}</span>
@@ -411,9 +410,12 @@ const Navbar = () => {
             {pages.some(page => location.pathname === page) ? (
                 ''
             ) : (
-                <div className={`fixed inset-0 z-50 xl:hidden transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-                    }`} style={{ top: '4rem' }}> {/* Adjusted to start after navbar */}
-
+                <div 
+                    className={`fixed inset-0 z-50 xl:hidden transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                    }`} 
+                    style={{ top: '4rem' }}
+                    dir={isRTL ? 'rtl' : 'ltr'}
+                >
                     {/* Backdrop */}
                     <div
                         className={`absolute inset-0 bg-black transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-50' : 'opacity-0'
@@ -422,7 +424,7 @@ const Navbar = () => {
                     />
 
                     {/* Sidebar */}
-                    <div className={`absolute top-0 left-0 h-full w-80 max-w-full bg-white shadow-2xl transform transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+                    <div className={`absolute top-0 ${isRTL ? 'right-0' : 'left-0'} h-full w-80 max-w-full bg-white shadow-2xl transform transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : isRTL ? 'translate-x-full' : '-translate-x-full'
                         }`}>
                         <div className="flex flex-col h-full">
                             {/* Scrollable Content - Starts immediately without header */}
@@ -432,11 +434,11 @@ const Navbar = () => {
                                     {isLoggedIn ? (
                                         <div className="flex items-center">
                                             {renderUserProfile()}
-                                            <button onClick={() => navigate('/profile')} className="flex-1 min-w-0">
-                                                <p className="font-semibold text-gray-900 truncate">
+                                            <button onClick={() => navigate('/profile')} className="flex-1 min-w-0 mr-3">
+                                                <p className="font-semibold text-gray-900 truncate text-right">
                                                     {user?.name || t('user')}
                                                 </p>
-                                                <p className="text-gray-600 text-sm truncate">
+                                                <p className="text-gray-600 text-sm truncate text-right">
                                                     {user?.email || t('manageAccount')}
                                                 </p>
                                             </button>
@@ -458,13 +460,13 @@ const Navbar = () => {
                                         <Link
                                             key={index}
                                             to={item.path}
-                                            className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+                                            className={`flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-4'} space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group`}
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
                                             <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
                                                 <item.icon className="h-6 w-6" style={{ color: 'var(--color-main)' }} />
                                             </div>
-                                            <span className="text-gray-800 font-medium text-lg">
+                                            <span className="text-gray-800 font-medium text-lg flex-1 text-right">
                                                 {t(item.i18nKey)}
                                             </span>
                                         </Link>
@@ -475,31 +477,26 @@ const Navbar = () => {
                                         <>
                                             <Link
                                                 to="/favorite_product"
-                                                className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group relative"
+                                                className={`flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-4'} space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group relative`}
                                                 onClick={() => setIsMobileMenuOpen(false)}
                                             >
                                                 <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
                                                     <Heart className="h-6 w-6" style={{ color: 'var(--color-main)' }} />
                                                 </div>
-                                                <span className="text-gray-800 font-medium text-lg">
+                                                <span className="text-gray-800 font-medium text-lg flex-1 text-right">
                                                     {t('favorites')}
                                                 </span>
-                                                {/* {favCount > 0 && (
-                                                    <span className="absolute right-4 bg-red-500 text-white text-sm rounded-full h-6 w-6 flex items-center justify-center font-bold">
-                                                        {favCount}
-                                                    </span>
-                                                )} */}
                                             </Link>
 
-                                             <Link
+                                            <Link
                                                 to="/orders"
-                                                className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group relative"
+                                                className={`flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-4'} space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group relative`}
                                                 onClick={() => setIsMobileMenuOpen(false)}
                                             >
                                                 <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
                                                     <Package className="h-6 w-6" style={{ color: 'var(--color-main)' }} />
                                                 </div>
-                                                <span className="text-gray-800 font-medium text-lg">
+                                                <span className="text-gray-800 font-medium text-lg flex-1 text-right">
                                                     {t('Orders')}
                                                 </span>
                                             </Link>
@@ -510,46 +507,18 @@ const Navbar = () => {
                                                     handleLogout();
                                                     setIsMobileMenuOpen(false);
                                                 }}
-                                                className="flex items-center space-x-4 p-3 rounded-xl hover:bg-red-50 transition-all duration-200 group w-full text-left"
+                                                className={`flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-4'} space-x-4 p-3 rounded-xl hover:bg-red-50 transition-all duration-200 group w-full text-right`}
                                             >
                                                 <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
                                                     <LogOut className="h-6 w-6 text-red-600" />
                                                 </div>
-                                                <span className="text-red-600 font-medium text-lg">
+                                                <span className="text-red-600 font-medium text-lg flex-1">
                                                     {t('logout')}
                                                 </span>
                                             </button>
                                         </>
                                     )}
                                 </div>
-
-                                {/* Language Selector */}
-                                {/* <div className="p-6 border-t border-gray-100">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <span className="text-gray-700 font-medium">{t('language')}</span>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {languages.map((lang) => (
-                                            <button
-                                                key={lang.code}
-                                                onClick={() => {
-                                                    handleLanguageChange(lang.code);
-                                                    setIsMobileMenuOpen(false);
-                                                }}
-                                                className={`p-3 rounded-lg border transition-all duration-200 ${selectedLanguage === lang.code
-                                                    ? 'border-gray-300 bg-gray-100'
-                                                    : 'border-gray-200 hover:border-gray-300'
-                                                    }`}
-                                                style={selectedLanguage === lang.code ? { color: 'var(--color-main)', borderColor: 'var(--color-main)' } : {}}
-                                            >
-                                                <div className="flex items-center space-x-2 justify-center">
-                                                    <span className="text-lg">{lang.flag}</span>
-                                                    <span className="font-medium">{lang.name}</span>
-                                                </div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div> */}
                             </div>
 
                             {/* Footer */}

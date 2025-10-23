@@ -29,11 +29,11 @@ const LandingPage = () => {
                     <div className="flex gap-5">
                         <Link to="/menu" className="bg-thirdColor flex flex-col gap-3  items-center justify-center rounded-xl p-2 md:p-6">
                             <MenuIcon />
-                            <h1 className="text-2xl text-mainColor">{t("Menu")}</h1>
+                            <h1 className="text-2xl text-mainColor">{t("menu")}</h1>
                         </Link>
                         <Link to="/order_online" className="bg-thirdColor flex flex-col gap-3  items-center justify-center rounded-xl p-2 md:p-6">
                             <DashIcon />
-                            <h1 className="text-2xl text-mainColor">{t("OrderNow")}</h1>
+                            <h1 className="text-2xl text-mainColor">{t("orderNow")}</h1>
                         </Link>
                     </div>
 

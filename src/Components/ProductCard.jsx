@@ -119,11 +119,11 @@ const ProductCard = ({
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <span className="text-mainColor font-bold text-sm">
-                {product.price_after_discount || product.price} EGP
+                {product.price_after_discount || product.price} {t('egp')}
               </span>
               {product.discount > 0 && (
                 <span className="text-red-500 text-xs line-through">
-                  {product.price} EGP
+                  {product.price} {t('egp')}
                 </span>
               )}
             </div>

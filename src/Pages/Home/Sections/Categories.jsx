@@ -5,17 +5,21 @@ import StaticSpinner from '../../../Components/Spinners/StaticSpinner';
 import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useGet } from '../../../Hooks/useGet';
+import { useTranslation } from 'react-i18next';
 
 const Categories = () => {
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
   const selectedLanguage = useSelector((state) => state.language?.selected ?? 'en');
+  const { t } = useTranslation();
+  const isRTL = selectedLanguage === 'ar';
+  
   const [categoriesData, setCategoriesData] = useState(null);
   const dispatch = useDispatch();
   const scrollContainerRef = useRef(null);
   const autoScrollRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(true);
 
-  // Get current order type and location from Redux - AT THE TOP LEVEL
+  // Get current order type and location from Redux
   const orderType = useSelector((state) => state.orderType?.orderType);
   const selectedAddressId = useSelector((state) => state.orderType?.selectedAddressId);
   const selectedBranchId = useSelector((state) => state.orderType?.selectedBranchId);
@@ -29,7 +33,6 @@ const Categories = () => {
   });
 
   // Helper function to build query string for category links
-  // Now it uses the Redux values from the top level
   const getCategoryQueryString = () => {
     const searchParams = new URLSearchParams();
     
@@ -57,7 +60,7 @@ const Categories = () => {
     }
   }, [dataCategories, dispatch, loadingCategories]);
 
-  // Auto-scroll functionality
+  // Auto-scroll functionality with RTL support
   useEffect(() => {
     if (!scrollContainerRef.current || !isPlaying) return;
 
@@ -72,10 +75,20 @@ const Categories = () => {
     autoScrollRef.current = setInterval(() => {
       const currentScroll = scrollContainer.scrollLeft;
 
-      if (currentScroll >= maxScroll - 5) {
-        scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
+      if (isRTL) {
+        // RTL scrolling logic
+        if (currentScroll <= 5) {
+          scrollContainer.scrollTo({ left: maxScroll, behavior: 'smooth' });
+        } else {
+          scrollContainer.scrollBy({ left: -300, behavior: 'smooth' });
+        }
       } else {
-        scrollContainer.scrollBy({ left: 300, behavior: 'smooth' });
+        // LTR scrolling logic
+        if (currentScroll >= maxScroll - 5) {
+          scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          scrollContainer.scrollBy({ left: 300, behavior: 'smooth' });
+        }
       }
     }, 3000);
 
@@ -84,17 +97,20 @@ const Categories = () => {
         clearInterval(autoScrollRef.current);
       }
     };
-  }, [isPlaying, categoriesData]);
+  }, [isPlaying, categoriesData, isRTL]);
 
+  // RTL-aware scroll functions
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+      const scrollAmount = isRTL ? 300 : -300;
+      scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
 
   const scrollRight = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+      const scrollAmount = isRTL ? -300 : 300;
+      scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
 
@@ -114,39 +130,42 @@ const Categories = () => {
   if (!categoriesData || categoriesData.length === 0) {
     return (
       <div className="w-full py-16 text-center bg-gray-50">
-        <p className="text-gray-500 text-lg">No categories available</p>
+        <p className="text-gray-500 text-lg">{t('noCategoriesAvailable')}</p>
       </div>
     );
   }
 
   return (
-    <section className="w-full py-4 px-4 relative">
+    <section 
+      className="w-full py-4 px-4 relative"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className={`flex justify-between items-center mb-8 `}>
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-mainColor">
-              Categories
+            <h2 className={`text-2xl md:text-3xl font-bold text-mainColor ${isRTL ? 'text-right' : 'text-left'}`}>
+              {t('categories')}
             </h2>
           </div>
 
           {/* Navigation Controls - Only show if multiple categories */}
           {categoriesData.length > 1 && (
-            <div className="flex items-center space-x-3">
-              <div className="flex space-x-2">
+            <div className={`flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-3'} space-x-3`}>
+              <div className={`flex ${isRTL ? 'space-x-reverse' : 'space-x-2'} space-x-2`}>
                 <button
                   onClick={scrollLeft}
                   className="p-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
-                  aria-label="Scroll left"
+                  aria-label={isRTL ? t('scrollRight') : t('scrollLeft')}
                 >
-                  <ChevronLeft className="h-5 w-5 text-gray-700" />
+                  <ChevronLeft className={`h-5 w-5 text-gray-700 transform ${isRTL ? 'rotate-180' : ''}`} />
                 </button>
                 <button
                   onClick={scrollRight}
                   className="p-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
-                  aria-label="Scroll right"
+                  aria-label={isRTL ? t('scrollLeft') : t('scrollRight')}
                 >
-                  <ChevronRight className="h-5 w-5 text-gray-700" />
+                  <ChevronRight className={`h-5 w-5 text-gray-700 transform ${isRTL ? 'rotate-180' : ''}`} />
                 </button>
               </div>
             </div>
@@ -157,50 +176,55 @@ const Categories = () => {
         <div className="relative group">
           <div
             ref={scrollContainerRef}
-            className="flex overflow-x-auto scrollbar-hide space-x-4 pb-6 -mx-4 px-4"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            className="flex overflow-x-auto scrollbar-hide pb-6 -mx-4 px-4"
+            style={{ 
+              scrollbarWidth: 'none', 
+              msOverflowStyle: 'none',
+              [isRTL ? 'paddingRight' : 'paddingLeft']: '0',
+              [isRTL ? 'paddingLeft' : 'paddingRight']: '0'
+            }}
           >
-            {categoriesData.map((category) => {
-              const queryString = getCategoryQueryString();
-              const to = queryString 
-                ? `/products/${category.id}?${queryString}`
-                : `/products/${category.id}`;
+            <div className={`flex ${isRTL ? 'space-x-reverse' : 'space-x-4'} space-x-4`}>
+              {categoriesData.map((category) => {
+                const queryString = getCategoryQueryString();
+                const to = queryString 
+                  ? `/products/${category.id}?${queryString}`
+                  : `/products/${category.id}`;
 
-              return (
-                <Link
-                  key={category.id}
-                  to={to}
-                  className="group flex-shrink-0 relative bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 w-40 h-48 flex flex-col"
-                >
-                  <div className="relative w-full h-full overflow-hidden">
-                    <img
-                      src={category.image_link}
-                      alt={category.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      onError={(e) => {
-                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5YzlkYWEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIwLjM1ZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
-                        e.target.style.objectFit = 'contain';
-                      }}
-                    />
+                return (
+                  <Link
+                    key={category.id}
+                    to={to}
+                    className="group flex-shrink-0 relative bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 w-40 h-48 flex flex-col"
+                  >
+                    <div className="relative w-full h-full overflow-hidden">
+                      <img
+                        src={category.image_link}
+                        alt={category.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
 
-                    <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
+                      <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
 
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <h3 className="text-white font-semibold text-sm text-center line-clamp-2">
-                        {category.name}
-                      </h3>
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <h3 className={`text-white font-semibold text-sm text-center line-clamp-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                          {category.name}
+                        </h3>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              );
-            })}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
 
           {/* Auto-scroll status indicator */}
           {categoriesData.length > 1 && (
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex items-center space-x-1 bg-black/70 text-white px-2 py-1 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className={`absolute bottom-2 left-1/2 transform -translate-x-1/2 flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-1'} space-x-1 bg-black/70 text-white px-2 py-1 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity`}>
               <div className={`h-2 w-2 rounded-full ${isPlaying ? 'bg-green-400' : 'bg-gray-400'}`}></div>
-              <span>Auto-scroll {isPlaying ? 'on' : 'paused'}</span>
+              <span>
+                {t('autoScroll')} {isPlaying ? t('on') : t('paused')}
+              </span>
             </div>
           )}
         </div>
