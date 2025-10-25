@@ -327,7 +327,11 @@ const CheckOut = () => {
             receipt: receiptFile,
             branch_id: orderType === 'take_away' ? selectedBranchId : "",
             address_id: orderType === 'delivery' ? selectedAddressId : "",
-            amount: taxSysType === "included" ? (orderSummary.subtotal - orderSummary.discount || orderSummary.priceAfterDiscount) : orderSummary.total,
+            amount:
+                (taxSysType === "included"
+                    ? (orderSummary.subtotal - orderSummary.discount || orderSummary.priceAfterDiscount)
+                    : orderSummary.total) +
+                (orderType === "delivery" ? (orderSummary.delivery || 0) : 0),
             total_tax: cart.totalTax,
             total_discount: cart.totalDiscount,
             delivery_price: orderSummary.delivery,
