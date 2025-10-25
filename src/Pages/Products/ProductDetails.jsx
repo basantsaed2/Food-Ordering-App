@@ -26,6 +26,7 @@ const ProductDetails = ({ product, onClose, language }) => {
   const [isFavorite, setIsFavorite] = useState(product.favourite || false);
   const [displayProduct, setDisplayProduct] = useState(product);
   const user = useSelector(state => state.user?.data?.user);
+  const selectedLanguage = useSelector(state => state.language?.selected || 'en');
 
   const savedOrderType = localStorage.getItem('orderType');
   const selectedAddressId =
@@ -232,42 +233,6 @@ const ProductDetails = ({ product, onClose, language }) => {
     return total * quantity;
   };
 
-  //   const calculateTotalPrice = () => {
-  //     if (!productDetails) return (product.price_after_discount || product.price) * quantity;
-  //     let total = parseFloat(productDetails.price_after_discount || productDetails.price);
-  //     Object.values(selectedVariations).forEach((optionIds) => {
-  //       if (Array.isArray(optionIds)) {
-  //         optionIds.forEach((optionId) => {
-  //           const option = productDetails.variations
-  //             .flatMap((v) => v.options)
-  //             .find((o) => o.id === optionId);
-  //           if (option) total += parseFloat(option.price);
-  //         });
-  //       } else {
-  //         const option = productDetails.variations
-  //           .flatMap((v) => v.options)
-  //           .find((o) => o.id === optionIds);
-  //         if (option) total += parseFloat(option.price);
-  //       }
-  //     });
-  //     Object.entries(selectedAddons).forEach(([addonId, addonData]) => {
-  //       if (addonData.checked) {
-  //         const addon = productDetails.addons?.find((a) => a.id === parseInt(addonId));
-  //         if (addon) {
-  //           const addonQty = addonData.quantity || 1;
-  //           total += parseFloat(addon.price) * addonQty;
-  //         }
-  //       }
-  //     });
-  //     Object.entries(selectedExtras).forEach(([extraId, extraQty]) => {
-  //       const extra = productDetails.allExtras?.find((e) => e.id === parseInt(extraId));
-  //       if (extra && extraQty > 0 && isExtraAvailable(extra)) {
-  //         total += parseFloat(extra.price_after_discount || extra.price) * extraQty;
-  //       }
-  //     });
-  //     return total * quantity;
-  //   };
-
   const validateVariationSelection = (variation) => {
     if (!variation.required) return true;
     const selectedOptions = selectedVariations[variation.id];
@@ -304,15 +269,15 @@ const ProductDetails = ({ product, onClose, language }) => {
 
     if (!user) {
       onClose();
-      auth.toastError(t('please Login First')); // show toast
-      setTimeout(() => navigate("/login"), 1500); // redirect after short delay
+      auth.toastError(t('pleaseLoginFirst'));
+      setTimeout(() => navigate("/login"), 1500);
       return;
     }
 
     if (!selectedBranchId && !selectedAddressId) {
       onClose();
-      auth.toastError(t('please select order type first')); // show toast
-      setTimeout(() => navigate("/order_online"), 1500); // redirect after short delay
+      auth.toastError(t('pleaseSelectOrderTypeFirst'));
+      setTimeout(() => navigate("/order_online"), 1500);
       return;
     }
 
@@ -342,8 +307,6 @@ const ProductDetails = ({ product, onClose, language }) => {
   }
 
   const displayData = productDetails || product;
-
-  console.log('Display Data:', displayData);
   const availableExtras = getAvailableExtras();
   const taxSetting = displayData.taxes?.setting || 'excluded';
 
@@ -424,7 +387,7 @@ const ProductDetails = ({ product, onClose, language }) => {
           {displayData.variations?.map((variation) => (
             <div key={variation.id} className="mb-6">
               <h3 className="font-semibold mb-3">
-                {variation.name} {variation.required && <span className="text-red-500">*</span>}
+                {variation.name} {variation.required ? <span className="text-red-500">*</span> : ''}
                 {variation.type === 'multiple' && (
                   <span className="text-sm text-gray-500 ml-2">
                     ({t('select')} {variation.min}-{variation.max})
@@ -447,7 +410,7 @@ const ProductDetails = ({ product, onClose, language }) => {
                             : (selectedVariations[variation.id] || []).includes(option.id)
                         }
                         onChange={() => handleVariationChange(variation.id, option.id, variation.type)}
-                        className="mr-3"
+                        className={`${selectedLanguage === "en" ? 'mr-3' : 'ml-3'}`}
                       />
                       <span>{option.name}</span>
                     </div>
@@ -477,7 +440,7 @@ const ProductDetails = ({ product, onClose, language }) => {
                             type="checkbox"
                             checked={!!currentAddon?.checked}
                             onChange={(e) => handleAddonChange(addon.id, e.target.checked)}
-                            className="mr-3"
+                            className={`${selectedLanguage === "en" ? 'mr-3' : 'ml-3'}`}
                           />
                           <span>{addon.name}</span>
                         </div>
@@ -510,7 +473,7 @@ const ProductDetails = ({ product, onClose, language }) => {
                               </div>
                             </>
                           ) : (
-                            <span className="text-sm text-gray-600">{t('quantity')}: 1 (fixed)</span>
+                            <span className="text-sm text-gray-600">{t('quantityFixed')}</span>
                           )}
                         </div>
                       )}
@@ -591,7 +554,7 @@ const ProductDetails = ({ product, onClose, language }) => {
                       type="checkbox"
                       checked={selectedExcludes.includes(exclude.id)}
                       onChange={(e) => handleExcludeChange(exclude.id, e.target.checked)}
-                      className="mr-3"
+                      className={`${selectedLanguage === "en" ? 'mr-3' : 'ml-3'}`}
                     />
                     <span>{exclude.name}</span>
                   </label>

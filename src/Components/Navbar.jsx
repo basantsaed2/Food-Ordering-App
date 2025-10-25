@@ -22,11 +22,15 @@ const Navbar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-    const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
+    
+    // SEPARATE STATES FOR DESKTOP AND MOBILE LANGUAGE DROPDOWNS
+    const [isDesktopLanguageDropdownOpen, setIsDesktopLanguageDropdownOpen] = useState(false);
+    const [isMobileLanguageDropdownOpen, setIsMobileLanguageDropdownOpen] = useState(false);
 
     // Refs for click outside detection
     const profileDropdownRef = useRef(null);
-    const languageDropdownRef = useRef(null);
+    const desktopLanguageDropdownRef = useRef(null);
+    const mobileLanguageDropdownRef = useRef(null);
 
     // Calculate real cart count
     const cartCount = cart?.itemCount || 0;
@@ -45,8 +49,11 @@ const Navbar = () => {
             if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
                 setIsProfileDropdownOpen(false);
             }
-            if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target)) {
-                setIsLanguageDropdownOpen(false);
+            if (desktopLanguageDropdownRef.current && !desktopLanguageDropdownRef.current.contains(event.target)) {
+                setIsDesktopLanguageDropdownOpen(false);
+            }
+            if (mobileLanguageDropdownRef.current && !mobileLanguageDropdownRef.current.contains(event.target)) {
+                setIsMobileLanguageDropdownOpen(false);
             }
         };
 
@@ -60,18 +67,8 @@ const Navbar = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
     };
 
-    // Sync local state with Redux selected language
-    useEffect(() => {
-        if (selectedLanguage) {
-            i18n.changeLanguage(selectedLanguage);
-            // Update document direction
-            document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
-        }
-    }, [selectedLanguage, i18n, isRTL]);
-
     // Find current language object from languages array
-    const currentLanguageObj = languages.find(lang => lang.code === selectedLanguage) || {};
-    const currentLanguageName = currentLanguageObj.name || selectedLanguage.toUpperCase();
+    const currentLanguageName = selectedLanguage.toUpperCase();
 
     const menuItems = [
         {
@@ -92,8 +89,11 @@ const Navbar = () => {
     ];
 
     const handleLanguageChange = (newLangCode) => {
+        console.log('Changing language to:', newLangCode);
         dispatch(setLanguage(newLangCode));
-        setIsLanguageDropdownOpen(false);
+        // Close both dropdowns when language is changed
+        setIsDesktopLanguageDropdownOpen(false);
+        setIsMobileLanguageDropdownOpen(false);
     };
 
     // Handle navigation
@@ -118,12 +118,24 @@ const Navbar = () => {
 
     const toggleProfileDropdown = () => {
         setIsProfileDropdownOpen(!isProfileDropdownOpen);
-        if (isLanguageDropdownOpen) setIsLanguageDropdownOpen(false);
+        // Close language dropdowns when opening profile dropdown
+        setIsDesktopLanguageDropdownOpen(false);
+        setIsMobileLanguageDropdownOpen(false);
     };
 
-    const toggleLanguageDropdown = () => {
-        setIsLanguageDropdownOpen(!isLanguageDropdownOpen);
+    // SEPARATE TOGGLE FUNCTIONS FOR DESKTOP AND MOBILE
+    const toggleDesktopLanguageDropdown = () => {
+        setIsDesktopLanguageDropdownOpen(!isDesktopLanguageDropdownOpen);
         if (isProfileDropdownOpen) setIsProfileDropdownOpen(false);
+        // Close mobile language dropdown when opening desktop one
+        setIsMobileLanguageDropdownOpen(false);
+    };
+
+    const toggleMobileLanguageDropdown = () => {
+        setIsMobileLanguageDropdownOpen(!isMobileLanguageDropdownOpen);
+        if (isProfileDropdownOpen) setIsProfileDropdownOpen(false);
+        // Close desktop language dropdown when opening mobile one
+        setIsDesktopLanguageDropdownOpen(false);
     };
 
     // Function to render logo with name
@@ -151,7 +163,7 @@ const Navbar = () => {
                     />
                 </div>
                 <span className="text-white font-bold text-xl lg:text-2xl">
-                    {mainData?.name || t('brandName')}
+                  {selectedLanguage === "en" ? mainData?.name : mainData?.ar_name || t('brandName')}
                 </span>
             </div>
         );
@@ -244,16 +256,17 @@ const Navbar = () => {
         </div>
     );
 
-    const LanguageDropdown = () => (
+    // SEPARATE LANGUAGE DROPDOWN COMPONENTS FOR DESKTOP AND MOBILE
+    const DesktopLanguageDropdown = () => (
         <div
-            ref={languageDropdownRef}
-            className={`absolute top-full ${isRTL ? 'right-0' : 'left-0'} mt-2 w-32 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-60 transition-all duration-200 ${isLanguageDropdownOpen ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform -translate-y-2 pointer-events-none'
+            ref={desktopLanguageDropdownRef}
+            className={`absolute top-full ${isRTL ? 'right-0' : 'left-0'} mt-2 w-32 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-60 transition-all duration-200 ${isDesktopLanguageDropdownOpen ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform -translate-y-2 pointer-events-none'
                 }`}
             style={{ direction: isRTL ? 'rtl' : 'ltr' }}
         >
             {languages.map((lang) => (
                 <button
-                    key={lang.code}
+                    key={lang.name}
                     onClick={() => handleLanguageChange(lang.name)}
                     className={`flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-3'} space-x-3 w-full px-3 py-2 transition-colors ${selectedLanguage === lang.name
                         ? 'bg-gray-100'
@@ -262,7 +275,31 @@ const Navbar = () => {
                     style={selectedLanguage === lang.name ? { color: 'var(--color-main)' } : {}}
                 >
                     <span className="text-lg">{lang.flag || '🌐'}</span>
-                    <span className="flex-1 font-medium text-right">{lang.name}</span>
+                    <span className="flex-1 font-medium text-right">{lang.name.toUpperCase()}</span>
+                </button>
+            ))}
+        </div>
+    );
+
+    const MobileLanguageDropdown = () => (
+        <div
+            ref={mobileLanguageDropdownRef}
+            className={`absolute top-full ${isRTL ? 'right-0' : 'left-0'} mt-2 w-32 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-60 transition-all duration-200 ${isMobileLanguageDropdownOpen ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform -translate-y-2 pointer-events-none'
+                }`}
+            style={{ direction: isRTL ? 'rtl' : 'ltr' }}
+        >
+            {languages.map((lang) => (
+                <button
+                    key={lang.name}
+                    onClick={() => handleLanguageChange(lang.name)}
+                    className={`flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-3'} space-x-3 w-full px-3 py-2 transition-colors ${selectedLanguage === lang.name
+                        ? 'bg-gray-100'
+                        : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                    style={selectedLanguage === lang.name ? { color: 'var(--color-main)' } : {}}
+                >
+                    <span className="text-lg">{lang.flag || '🌐'}</span>
+                    <span className="flex-1 font-medium text-right">{lang.name.toUpperCase()}</span>
                 </button>
             ))}
         </div>
@@ -278,7 +315,7 @@ const Navbar = () => {
                     style={{ backgroundColor: 'var(--color-main)' }}
                     dir={isRTL ? 'rtl' : 'ltr'}
                 >
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
                         <div className="flex justify-between items-center h-16 lg:h-20">
                             {/* Logo with Name */}
                             <Link to="/" className="flex-shrink-0 hover:opacity-90 transition-opacity">
@@ -286,12 +323,12 @@ const Navbar = () => {
                             </Link>
 
                             {/* Desktop Navigation */}
-                            <div className="hidden xl:flex xl:items-center xl:space-x-8">
+                            <div className={`hidden xl:flex xl:items-center xl:${isRTL ? 'space-x-4' : 'space-x-reverse'} space-x-4`}>
                                 {menuItems.map((item, index) => (
                                     <Link
                                         key={index}
                                         to={item.path}
-                                        className={`text-white hover:text-gray-200 transition-all duration-200 font-medium flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-2'} space-x-2 group relative`}
+                                        className={`text-white hover:text-gray-200 transition-all duration-200 font-medium flex items-center ${isRTL ? 'space-x-4' : 'space-x-reverse'} space-x-4 group relative`}
                                     >
                                         <item.icon className="h-5 w-5 group-hover:scale-110 transition-transform" />
                                         <span className={isRTL ? 'mr-1' : 'ml-1'}>{t(item.i18nKey)}</span>
@@ -327,15 +364,15 @@ const Navbar = () => {
                                 )}
 
                                 {/* Language Toggle - Desktop */}
-                                <div className="relative" ref={languageDropdownRef}>
+                                <div className="relative" ref={desktopLanguageDropdownRef}>
                                     <button
-                                        onClick={toggleLanguageDropdown}
+                                        onClick={toggleDesktopLanguageDropdown}
                                         className={`text-white hover:text-gray-200 transition-colors flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-2'} space-x-2 bg-white bg-opacity-20 rounded-full px-4 py-2 group`}
                                     >
                                         <Globe className="h-4 w-4" />
                                         <span className="font-medium">{currentLanguageName}</span>
                                     </button>
-                                    <LanguageDropdown />
+                                    <DesktopLanguageDropdown />
                                 </div>
 
                                 {/* Profile/Login */}
@@ -382,15 +419,16 @@ const Navbar = () => {
                                     </Link>
                                 )}
 
-                                <div className="relative" ref={languageDropdownRef}>
+                                {/* Mobile Language Toggle */}
+                                <div className="relative" ref={mobileLanguageDropdownRef}>
                                     <button
-                                        onClick={toggleLanguageDropdown}
+                                        onClick={toggleMobileLanguageDropdown}
                                         className={`text-white hover:text-gray-200 transition-colors flex items-center ${isRTL ? 'space-x-reverse' : 'space-x-2'} space-x-2 bg-white bg-opacity-20 rounded-full px-4 py-2 group`}
                                     >
                                         <Globe className="h-4 w-4" />
                                         <span className="font-medium">{currentLanguageName}</span>
                                     </button>
-                                    <LanguageDropdown />
+                                    <MobileLanguageDropdown />
                                 </div>
 
                                 {/* Mobile Menu Button */}

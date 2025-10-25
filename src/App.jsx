@@ -6,6 +6,7 @@ import "primereact/resources/themes/lara-light-blue/theme.css";
 import { useGet } from "./Hooks/useGet";
 import { useTranslation } from "react-i18next";
 import "./index.css";
+// import "./app.css";
 import "./i18n";
 import LoaderLogin from "./Components/Spinners/LoaderLogin";
 import { setMaintenance } from "./Store/Slices/maintenanceSlice";
@@ -17,10 +18,20 @@ import Footer from "./Components/Footer";
 const App = () => {
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
   const mainData = useSelector((state) => state.mainData?.data);
+  const selectedLanguage = useSelector((state) => state.language?.selected); // Add this line
   const dispatch = useDispatch();
   const location = useLocation();
-  const { i18n } = useTranslation();
+  const { i18n } = useTranslation(); // You already have this
   const scrollContainerRef = useRef(null);
+
+  // ✅ ADD THIS USEEFFECT FOR LANGUAGE PERSISTENCE
+  useEffect(() => {
+    if (selectedLanguage) {
+      i18n.changeLanguage(selectedLanguage);
+      document.documentElement.dir = selectedLanguage === 'ar' ? 'rtl' : 'ltr';
+      document.documentElement.lang = selectedLanguage;
+    }
+  }, [selectedLanguage, i18n]);
 
   // ✅ Now using autoFetch: false (manual control)
   const {

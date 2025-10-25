@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { usePost } from '../../Hooks/usePost';
@@ -11,13 +10,17 @@ import { TbPasswordUser } from 'react-icons/tb';
 import { useAuth } from '../../Context/Auth';
 import { InputOtp } from 'primereact/inputotp';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 const LoginPage = () => {
     const navigate = useNavigate();
     const apiUrl = import.meta.env.VITE_API_BASE_URL;
     const auth = useAuth();
+    const { t } = useTranslation();
     const mainData = useSelector(state => state.mainData?.data);
     const selectedLanguage = useSelector(state => state.language?.selected || 'en');
+    const isRTL = selectedLanguage === 'en';
+    
     const customInput = ({ events, props }) => {
         const { invalid, ...inputProps } = props;
         const inputClass = invalid ? 'border-secoundColor' : 'border-gray-300';
@@ -90,20 +93,20 @@ const LoginPage = () => {
     useEffect(() => {
         if (responseSendOtp?.status === 200) {
             setLoginStep('otp');
-            setSuccessMessage(`Verification code sent to your ${verificationMethod}`);
+            setSuccessMessage(t('verificationCodeSent', { method: verificationMethod }));
         }
-    }, [responseSendOtp, loadingSendOtp])
+    }, [responseSendOtp, loadingSendOtp, verificationMethod, t])
 
     useEffect(() => {
         if (responseVerifyOtp?.status === 200) {
             setLoginStep('newPassword');
-            setSuccessMessage('Code verified successfully. Please set your new password.');
+            setSuccessMessage(t('codeVerifiedSuccessfully'));
         }
-    }, [responseVerifyOtp, loadingVerifyOtp])
+    }, [responseVerifyOtp, loadingVerifyOtp, t])
 
     useEffect(() => {
         if (responseResetPassword && responseResetPassword?.status === 200 && !loadingResetPassword) {
-            setSuccessMessage('Password reset successfully. You can now login with your new password.');
+            setSuccessMessage(t('passwordResetSuccessfully'));
             setTimeout(() => {
                 setLoginStep('login');
                 setNewPassword('');
@@ -111,7 +114,7 @@ const LoginPage = () => {
                 setOtp('');
             }, 2000);
         }
-    }, [responseResetPassword, loadingResetPassword])
+    }, [responseResetPassword, loadingResetPassword, t])
 
     // Validate email format
     const validateEmail = (email) => {
@@ -134,15 +137,14 @@ const LoginPage = () => {
         // Validation
         const newErrors = {};
         if (!validateEmail(email)) {
-            newErrors.email = 'Please enter a valid email address';
+            newErrors.email = t('validEmailRequired');
         }
         if (!password) {
-            newErrors.password = 'Password is required';
+            newErrors.password = t('passwordRequired');
         }
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
-
             return;
         }
         const credentials = {
@@ -162,15 +164,14 @@ const LoginPage = () => {
         // Validation
         const newErrors = {};
         if (verificationMethod === 'email' && !validateEmail(email)) {
-            newErrors.email = 'Please enter a valid email address';
+            newErrors.email = t('validEmailRequired');
         }
         if (verificationMethod === 'phone' && !validatePhone(phone)) {
-            newErrors.phone = 'Please enter a valid phone number';
+            newErrors.phone = t('validPhoneRequired');
         }
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
-
             return;
         }
 
@@ -179,7 +180,6 @@ const LoginPage = () => {
         };
 
         postSendOtp(payload);
-
     };
 
     // Handle OTP verification
@@ -189,8 +189,7 @@ const LoginPage = () => {
         setErrors({});
 
         if (!otp) {
-            setErrors({ otp: 'Please enter a valid 5-digit code' });
-
+            setErrors({ otp: t('valid5DigitCodeRequired') });
             return;
         }
         const payload = {
@@ -210,13 +209,13 @@ const LoginPage = () => {
         // Validation
         const newErrors = {};
         if (!newPassword) {
-            newErrors.newPassword = 'New password is required';
+            newErrors.newPassword = t('newPasswordRequired');
         } else if (newPassword.length < 6) {
-            newErrors.newPassword = 'Password must be at least 6 characters';
+            newErrors.newPassword = t('passwordMinLength');
         }
 
         if (newPassword !== confirmPassword) {
-            newErrors.confirmPassword = 'Passwords do not match';
+            newErrors.confirmPassword = t('passwordsDoNotMatch');
         }
 
         if (Object.keys(newErrors).length > 0) {
@@ -247,7 +246,7 @@ const LoginPage = () => {
                                         <MdFastfood className="w-24 h-24 text-white" />
                                     </div>
                                     <h2 className="text-3xl font-bold mb-4">{`${selectedLanguage === "en" ? mainData?.name : mainData?.ar_name}`}</h2>
-                                    <p className="text-white">Delicious meals delivered to your door</p>
+                                    <p className="text-white">{t('deliciousMealsDelivered')}</p>
                                 </div>
 
                                 {/* Decorative elements */}
@@ -259,40 +258,40 @@ const LoginPage = () => {
                             {/* Right side - Form */}
                             <div className="w-full md:w-3/5 bg-white p-8 md:p-12 flex flex-col justify-center">
                                 <div className="text-center mb-8">
-                                    <h1 className="text-3xl font-bold text-secoundColor mb-2">Welcome Back</h1>
-                                    <p className="text-secoundColor">Sign in to continue to {`${selectedLanguage === "en" ? mainData?.name : mainData?.ar_name}`}</p>
+                                    <h1 className="text-3xl font-bold text-secoundColor mb-2">{t('welcomeBack')}</h1>
+                                    <p className="text-secoundColor">{t('signInToContinue')} {`${selectedLanguage === "en" ? mainData?.name : mainData?.ar_name}`}</p>
                                 </div>
 
                                 <form onSubmit={handleLogin} className="space-y-5">
                                     <div>
-                                        <label className="block text-gray-700 text-sm font-medium mb-2">Email Address</label>
+                                        <label className="block text-gray-700 text-sm font-medium mb-2">{t('emailAddress')}</label>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <div className={`absolute inset-y-0 ${isRTL ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
                                                 <FaEnvelope className="h-5 w-5 text-gray-400" />
                                             </div>
                                             <input
                                                 type="email"
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
-                                                placeholder="Enter your email"
-                                                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.email ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
+                                                placeholder={t('enterYourEmail')}
+                                                className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-3 rounded-lg border ${errors.email ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
                                             />
                                         </div>
                                         {errors.email && <p className="mt-1 text-sm text-secoundColor">{errors.email}</p>}
                                     </div>
 
                                     <div>
-                                        <label className="block text-gray-700 text-sm font-medium mb-2">Password</label>
+                                        <label className="block text-gray-700 text-sm font-medium mb-2">{t('password')}</label>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <div className={`absolute inset-y-0 ${isRTL ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
                                                 <FaLock className="h-5 w-5 text-gray-400" />
                                             </div>
                                             <input
                                                 type="password"
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
-                                                placeholder="Enter your password"
-                                                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.password ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
+                                                placeholder={t('enterYourPassword')}
+                                                className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-3 rounded-lg border ${errors.password ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
                                             />
                                         </div>
                                         {errors.password && <p className="mt-1 text-sm text-secoundColor">{errors.password}</p>}
@@ -304,7 +303,7 @@ const LoginPage = () => {
                                             className="text-sm text-secoundColor hover:text-mainColor font-medium transition-colors"
                                             onClick={() => setLoginStep('forgot')}
                                         >
-                                            Forgot Password?
+                                            {t('forgotPassword')}
                                         </button>
                                     </div>
 
@@ -331,17 +330,17 @@ const LoginPage = () => {
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
-                                                Logging in...
+                                                {t('loggingIn')}
                                             </>
-                                        ) : 'Login'}
+                                        ) : t('login')}
                                     </button>
                                 </form>
 
                                 <div className="mt-8 text-center">
                                     <p className="text-sm text-gray-600">
-                                        Don't have an account?{' '}
+                                        {t('dontHaveAccount')}{' '}
                                         <Link to="/signup" className="text-secoundColor hover:text-mainColor font-medium">
-                                            Sign Up
+                                            {t('signUp')}
                                         </Link>
                                     </p>
                                 </div>
@@ -353,53 +352,53 @@ const LoginPage = () => {
             case 'forgot':
                 return (
                     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-thirdColor to-mainColor p-4">
-                        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
+                        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full" dir={isRTL ? 'rtl' : 'ltr'}>
                             <button
                                 onClick={() => setLoginStep('login')}
-                                className="flex items-center text-secoundColor hover:text-mainColor mb-6"
+                                className={`flex items-center text-secoundColor hover:text-mainColor mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}
                             >
-                                <FaArrowLeft className="mr-2" /> Back to Login
+                                <FaArrowLeft className={isRTL ? 'ml-2' : 'mr-2'} /> {t('backToLogin')}
                             </button>
 
                             <div className="text-center mb-8">
                                 <div className="flex justify-center mb-4">
                                     <TbPasswordUser className="w-12 h-12 text-mainColor" />
                                 </div>
-                                <h1 className="text-2xl font-bold text-secoundColor mb-2">Reset Password</h1>
-                                <p className="text-secoundColor">Enter your {verificationMethod} to receive a verification code</p>
+                                <h1 className="text-2xl font-bold text-secoundColor mb-2">{t('resetPassword')}</h1>
+                                <p className="text-secoundColor">{t('enterVerificationMethod', { method: verificationMethod })}</p>
                             </div>
 
                             <form onSubmit={handleForgotPassword}>
                                 {verificationMethod === 'email' ? (
                                     <div className="mb-6">
-                                        <label className="block text-gray-700 text-sm font-medium mb-2">Email Address</label>
+                                        <label className="block text-gray-700 text-sm font-medium mb-2">{t('emailAddress')}</label>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <div className={`absolute inset-y-0 ${isRTL ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
                                                 <FaEnvelope className="h-5 w-5 text-gray-400" />
                                             </div>
                                             <input
                                                 type="email"
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
-                                                placeholder="Enter your email"
-                                                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.email ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
+                                                placeholder={t('enterYourEmail')}
+                                                className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-3 rounded-lg border ${errors.email ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
                                             />
                                         </div>
                                         {errors.email && <p className="mt-1 text-sm text-secoundColor">{errors.email}</p>}
                                     </div>
                                 ) : (
                                     <div className="mb-6">
-                                        <label className="block text-gray-700 text-sm font-medium mb-2">Phone Number</label>
+                                        <label className="block text-gray-700 text-sm font-medium mb-2">{t('phoneNumber')}</label>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <div className={`absolute inset-y-0 ${isRTL ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
                                                 <FaPhone className="h-5 w-5 text-gray-400" />
                                             </div>
                                             <input
                                                 type="tel"
                                                 value={phone}
                                                 onChange={(e) => setPhone(e.target.value)}
-                                                placeholder="Enter your phone number"
-                                                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.phone ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
+                                                placeholder={t('enterYourPhone')}
+                                                className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-3 rounded-lg border ${errors.phone ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
                                             />
                                         </div>
                                         {errors.phone && <p className="mt-1 text-sm text-secoundColor">{errors.phone}</p>}
@@ -429,9 +428,9 @@ const LoginPage = () => {
                                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
-                                            Sending...
+                                            {t('sending')}
                                         </>
-                                    ) : 'Send Verification Code'}
+                                    ) : t('sendVerificationCode')}
                                 </button>
                             </form>
                         </div>
@@ -441,26 +440,25 @@ const LoginPage = () => {
             case 'otp':
                 return (
                     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-thirdColor to-mainColor p-4">
-                        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
+                        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full" dir={isRTL ? 'rtl' : 'ltr'}>
                             <button
                                 onClick={() => setLoginStep('forgot')}
-                                className="flex items-center text-secoundColor hover:text-mainColor mb-6"
+                                className={`flex items-center text-secoundColor hover:text-mainColor mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}
                             >
-                                <FaArrowLeft className="mr-2" /> Back
+                                <FaArrowLeft className={isRTL ? 'ml-2' : 'mr-2'} /> {t('back')}
                             </button>
 
                             <div className="text-center mb-8">
                                 <div className="flex justify-center mb-4">
                                     <MdEmail className="w-12 h-12 text-mainColor" />
                                 </div>
-                                <h1 className="text-2xl font-bold text-secoundColor mb-2">Verification Code</h1>
-                                <p className="text-secoundColor">We've sent a 6-digit code to your {verificationMethod}</p>
+                                <h1 className="text-2xl font-bold text-secoundColor mb-2">{t('verificationCode')}</h1>
+                                <p className="text-secoundColor">{t('verificationCodeSentTo', { method: verificationMethod })}</p>
                             </div>
 
                             <form onSubmit={handleVerifyOtp}>
-
                                 <div className="mb-6">
-                                    <label className="block text-gray-700 text-sm font-medium mb-2">Verification Code</label>
+                                    <label className="block text-gray-700 text-sm font-medium mb-2">{t('verificationCode')}</label>
                                     <div className="relative">
                                         <InputOtp
                                             value={otp}
@@ -496,16 +494,16 @@ const LoginPage = () => {
                                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
-                                            Verifying...
+                                            {t('verifying')}
                                         </>
-                                    ) : 'Verify Code'}
+                                    ) : t('verifyCode')}
                                 </button>
 
                                 <div className="mt-6 text-center">
                                     <p className="text-sm text-gray-600">
-                                        Didn't receive the code?{' '}
+                                        {t('didntReceiveCode')}{' '}
                                         <button type="button" className="text-secoundColor hover:text-mainColor font-medium">
-                                            Resend
+                                            {t('resend')}
                                         </button>
                                     </p>
                                 </div>
@@ -517,52 +515,52 @@ const LoginPage = () => {
             case 'newPassword':
                 return (
                     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-thirdColor to-mainColor p-4">
-                        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
+                        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full" dir={isRTL ? 'rtl' : 'ltr'}>
                             <button
                                 onClick={() => setLoginStep('otp')}
-                                className="flex items-center text-secoundColor hover:text-mainColor mb-6"
+                                className={`flex items-center text-secoundColor hover:text-mainColor mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}
                             >
-                                <FaArrowLeft className="mr-2" /> Back
+                                <FaArrowLeft className={isRTL ? 'ml-2' : 'mr-2'} /> {t('back')}
                             </button>
 
                             <div className="text-center mb-8">
                                 <div className="flex justify-center mb-4">
                                     <MdOutlinePassword className="w-12 h-12 text-mainColor" />
                                 </div>
-                                <h1 className="text-2xl font-bold text-secoundColor mb-2">Set New Password</h1>
-                                <p className="text-secoundColor">Please enter your new password</p>
+                                <h1 className="text-2xl font-bold text-secoundColor mb-2">{t('setNewPassword')}</h1>
+                                <p className="text-secoundColor">{t('enterNewPassword')}</p>
                             </div>
 
                             <form onSubmit={handleResetPassword}>
                                 <div className="mb-4">
-                                    <label className="block text-gray-700 text-sm font-medium mb-2">New Password</label>
+                                    <label className="block text-gray-700 text-sm font-medium mb-2">{t('newPassword')}</label>
                                     <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <div className={`absolute inset-y-0 ${isRTL ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
                                             <FaLock className="h-5 w-5 text-gray-400" />
                                         </div>
                                         <input
                                             type="password"
                                             value={newPassword}
                                             onChange={(e) => setNewPassword(e.target.value)}
-                                            placeholder="Enter new password"
-                                            className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.newPassword ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
+                                            placeholder={t('enterNewPassword')}
+                                            className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-3 rounded-lg border ${errors.newPassword ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
                                         />
                                     </div>
                                     {errors.newPassword && <p className="mt-1 text-sm text-secoundColor">{errors.newPassword}</p>}
                                 </div>
 
                                 <div className="mb-6">
-                                    <label className="block text-gray-700 text-sm font-medium mb-2">Confirm New Password</label>
+                                    <label className="block text-gray-700 text-sm font-medium mb-2">{t('confirmNewPassword')}</label>
                                     <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <div className={`absolute inset-y-0 ${isRTL ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
                                             <FaLock className="h-5 w-5 text-gray-400" />
                                         </div>
                                         <input
                                             type="password"
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
-                                            placeholder="Confirm new password"
-                                            className={`w-full pl-10 pr-4 py-3 rounded-lg border ${errors.confirmPassword ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
+                                            placeholder={t('confirmNewPassword')}
+                                            className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-3 rounded-lg border ${errors.confirmPassword ? 'border-secoundColor' : 'border-gray-300'} focus:ring-2 focus:ring-thirdColor focus:border-mainColor outline-none transition duration-200`}
                                         />
                                     </div>
                                     {errors.confirmPassword && <p className="mt-1 text-sm text-secoundColor">{errors.confirmPassword}</p>}
@@ -591,9 +589,9 @@ const LoginPage = () => {
                                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
-                                            Resetting...
+                                            {t('resetting')}
                                         </>
-                                    ) : 'Reset Password'}
+                                    ) : t('resetPassword')}
                                 </button>
                             </form>
                         </div>
