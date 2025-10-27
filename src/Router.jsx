@@ -18,6 +18,7 @@ import SignUpPage from "./Pages/Authentication/SignUp";
 import ProtectedLogin from "./ProtectedData/ProtectedLogin";
 import MyOrderTracking from "./Pages/OrderTracking/MyOrderTracking";
 import Support from "./Pages/SupportPrivacy/Support";
+import PrivacyPolicy from "./Pages/SupportPrivacy/PrivacyPolicy";
 
 export const router = createBrowserRouter([
   {
@@ -53,9 +54,13 @@ export const router = createBrowserRouter([
         path: "order_online",
         element: <OrderType />
       },
-       {
+      {
         path: "support",
-        element: <Support/>
+        element: <Support />
+      },
+      {
+        path: "policy",
+        element: <PrivacyPolicy />
       },
 
 
@@ -80,7 +85,7 @@ export const router = createBrowserRouter([
           { path: "add_address", element: <AddNewAddress /> },
           { path: "check_out", element: <CheckOut /> },
           { path: "order_traking/:orderId", element: <OrderTraking /> },
-          { path: "orders" , element: <MyOrderTracking /> },
+          { path: "orders", element: <MyOrderTracking /> },
         ],
       },
     ],
